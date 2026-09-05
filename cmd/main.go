@@ -11,6 +11,8 @@ import (
 	"medicity/internal/routes"
 	//"time"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -42,7 +44,11 @@ func main() {
 	//load static files
 	r.Static("/static", "../static")
 
+	 store := cookie.NewStore([]byte("your-secret-key"))
+    r.Use(sessions.Sessions("mysession", store))
+
 	routes.SetupRoutes(r)
+
 	logger.Log.Info("Server started", zap.String("port", confg.Port))
 	//Run server
 	fmt.Println("Server started on port", confg.Port)
