@@ -12,13 +12,13 @@ type UserRepository interface {
 	FindByUsername(username string) (*models.User, error)
 	FindByEmailAndPhone(email,phone string) (*models.User, error)
 	FindByEmailOrPhone(email,phone string) (*models.User, error)
-
-	FindByEmail(email string) (*models.User, error)
-	FindByPhone(phone string) (*models.User, error)
-	EmailExist(email string) (bool, error)		
+	FindByPhone(phone,role string) (*models.User, error)		
 	PhoneExist(phone string) (bool, error)
 	Create(tx *gorm.DB, user *models.User) error
 	FetchUser(userID uint) (*models.User, error)
+    Update(user *models.User) error
+    GetPatientIDByUserID(userID uint) (uint, error)
+    GetUserByID(userID uint)(*models.User,error)
 }
 
   type userRepository struct{}
@@ -27,7 +27,35 @@ type UserRepository interface {
   	return &userRepository{}
   }
 
-  
+func (r *userRepository) GetUserByID(userID uint)(*models.User,error){
+
+var user models.User
+
+	err := database.DB.Where("user_id = ?", userID).First(&user).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) GetPatientIDByUserID(userID uint) (uint, error) {
+
+	var patient models.Patient
+
+	err := database.DB.
+		Select("patient_id").
+		Where("user_id = ?", userID).
+		First(&patient).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return patient.PatientID, nil
+}
+
 func (r *userRepository) FindByEmailOrPhone(email, phone string) (*models.User, error) {
     var user models.User
 
@@ -63,40 +91,23 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
     return &user, nil
 }
 
-func (r *userRepository) FindByEmail(email string) (*models.User, error) {
-	var user models.User
-
-	err := database.DB.Where("email = ?", email).First(&user).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+func (r *userRepository) Update(user *models.User) error {
+	return database.DB.Save(user).Error
 }
+func (r *userRepository) FindByPhone(phone,role string) (*models.User, error) {
+    var user models.User
+    err := database.DB.Where("phone = ? AND role = ?", phone, role  ).First(&user).Error
 
-func (r *userRepository) FindByPhone(phone string) (*models.User, error) {
-	var user models.User
+if errors.Is(err, gorm.ErrRecordNotFound) {
+        return nil, nil
+    }
 
-	err := database.DB.Where("phone = ?", phone).First(&user).Error	
+    if err != nil {
+        return nil, err
+    }
 
+    return &user, nil
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (r *userRepository) EmailExist(email string) (bool, error) {
-	var count int64
-
-		err := database.DB.Model(&models.User{}).Where("email = ?", email).Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
 }
 
 func (r *userRepository) PhoneExist(phone string) (bool, error) {

@@ -146,6 +146,37 @@ main {
 
 }
 
+.centre-panel {
+
+    width: 100%;
+
+    background: #00420E;
+
+    color: white;
+
+    padding: 45px;
+
+}
+
+.centre-panel h2 {
+
+    font-family: Manrope;
+
+    font-size: 42px;
+
+    line-height: 50px;
+
+}
+
+.centre-panel p {
+
+    margin-top: 18px;
+
+    line-height: 28px;
+
+    color: #b9ebb7;
+
+}
 .image-box {
 
     margin-top: 40px;
@@ -409,7 +440,11 @@ footer {
         flex-direction: column;
 
     }
+    .update-card {
 
+        flex-direction: row;
+
+    }
     .left-panel,
     .right-panel {
 

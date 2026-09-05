@@ -9,8 +9,7 @@ type DoctorProfile struct {
 
 	HospitalAddress string `gorm:"size:255"`
 
-	ProfessionalRole string `gorm:"size:100"`
-
+	
 	Experience uint
 
 	ProfessionalSummary string `gorm:"type:text"`

@@ -28,13 +28,13 @@ ErrEmailAndPhoneMismatch   = errors.New("Email Or phone registered ")
 type SignupService interface {
 	Signup(input *dto.SignupInput, role models.UserRole) (string,error)
 	ResendOTP(phone string) error
-	GenerateAndSendOTP(phone string) (error)
+	GenerateAndSendOTP(phone string) (string,error)
 	ValidateOTP(phone, otp string)(time.Time,error)
 	CreateUser(phone string) (*models.User,error)
 	FindPendingUserByPhone(phone string)(*models.PendingUserSignup,error)
 	UpdatePhone(oldPhone string,newPhone string) (models.UserRole,string,error)
 	VerifyOTPAndCreateUser(phone string,otp string) (time.Time, error)
-
+SaveOTPPendingUser(otpHash,phone string) error
 }
 
 type signupService struct {
@@ -151,22 +151,8 @@ if pendingUser.Email==email{
 		return phone,err
 	}
 
-	// Generate OTP
-
-	otp, err := utils.GenerateOTP()
-	if err != nil {
-		logger.Log.Error(
-			"Failed to generate signup OTP",
-			zap.String("email", email),
-			zap.Error(err),
-		)
-
-		return phone,err
-	}
-
-	// Hash password
-
-	otpHash, err := utils.HashPassword(otp)
+	
+	otpHash, err := s.GenerateAndSendOTP(phone)
 	if err != nil {
 
 		logger.Log.Error(
@@ -202,7 +188,7 @@ if pendingUser.Email==email{
 		return phone,err
 	}
 
-	println("OTP:", otp)
+
 
 	logger.Log.Info(
 		"Signup pending OTP verification",
@@ -215,8 +201,8 @@ if pendingUser.Email==email{
 
 func (s *signupService) ResendOTP(phone string) error {
 
-    err := s.GenerateAndSendOTP(phone)
-
+    otpHash,err := s.GenerateAndSendOTP(phone)
+s.SaveOTPPendingUser(otpHash,phone)
     if err != nil {
         return err
     }
@@ -229,7 +215,38 @@ func (s *signupService) ResendOTP(phone string) error {
     return nil
 }
 
-func (s *signupService) GenerateAndSendOTP(phone string) (error) {
+func (s *signupService) GenerateAndSendOTP(phone string) (string,error) {
+
+
+	// Generate new OTP
+
+	otp, err := utils.GenerateOTP()
+	if err != nil {
+		logger.Log.Error(
+			"Failed to generate signup OTP",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+
+		return "",err
+	}
+	println("OTP:", otp)
+
+	otpHash, err := utils.HashPassword(otp)
+	if err != nil {
+
+		logger.Log.Error(
+			"Failed to hash signup OTP",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+
+		return "",err
+	}
+	return otpHash,nil
+	//return s.SaveOTPPendingUser(otpHash,phone)
+}
+func (s *signupService) SaveOTPPendingUser(otpHash, phone string) (error) {
 	pendingUser, err := s.pendingUserRepo.FindByPhone(phone)
 
 	if err != nil {
@@ -242,38 +259,18 @@ func (s *signupService) GenerateAndSendOTP(phone string) (error) {
 
 		return err
 	}
-
-	// Generate new OTP
-
-	otp, err := utils.GenerateOTP()
-	if err != nil {
-		logger.Log.Error(
-			"Failed to generate signup OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return err
-	}
-
-	otpHash, err := utils.HashPassword(otp)
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to hash signup OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return err
-	}
-
 	pendingUser.OTPHash = otpHash
 	pendingUser.OTPExpiresAt = time.Now().Add(2 * time.Minute)
 
 	err = s.pendingUserRepo.Update(pendingUser)
-	println("OTP:", otp)
-
+if err!=nil{
+			logger.Log.Error(
+			"Failed to save otp to pendinguser",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+	return err
+}
 	logger.Log.Info("Signup pending OTP verification",
 	zap.String("phone", phone),
 	zap.String("role", string(pendingUser.Role)),
@@ -462,10 +459,19 @@ if err != nil {
         return "","",err
     }
 	// Generate OTP
-	err = s.GenerateAndSendOTP(pendingUser.Phone)
+	otpHash,err := s.GenerateAndSendOTP(pendingUser.Phone)
+	    if err != nil {
+		logger.Log.Error(
+        "Error while sending otp to new number",
+        zap.String("phone", pendingUser.Phone),
+        
+    )
+        return pendingUser.Role,pendingUser.Phone,err
+    }
+	err = s.SaveOTPPendingUser(otpHash,pendingUser.Phone)
     if err != nil {
 		logger.Log.Error(
-        "phone updated. Error while sending otp to new number",
+        "Error while update phone number",
         zap.String("phone", pendingUser.Phone),
         
     )

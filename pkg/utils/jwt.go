@@ -10,14 +10,16 @@ import (
 
 type Claims struct {
 	UserID uint   `json:"user_id"`
+	RoleID uint   `json:"role_id"`
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uint, role string) (string, error) {
+func GenerateJWT(user_id uint,role_id uint, role string) (string, error) {
 
 	claims := Claims{
-		UserID: userID,
+		UserID: user_id,
+		RoleID: role_id,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

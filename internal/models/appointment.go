@@ -16,6 +16,7 @@ type Appointment struct {
 
 	PatientID uint `gorm:"not null;index"`
 	DoctorID  uint `gorm:"not null;index"`
+	DateTime time.Time `gorm:"not null"`
 	SlotID    uint `gorm:"not null;uniqueIndex"`
 
 	// Store the consultation fee charged at the time of booking.

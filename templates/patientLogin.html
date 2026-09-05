@@ -7,336 +7,335 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediCity Login</title>
 
-```
-<link rel="stylesheet" href="/static/css/style.css">
+    ```
+    <link rel="stylesheet" href="/static/css/style.css">
 
-<link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Public+Sans:wght@300;400;500;600&display=swap"
-    rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Public+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 
-<link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-<style>
-    .error {
-        color: #fff;
-        font-size: 12px;
-        height: 20px;
-        padding: 5px;
-    }
-</style>
-```
+    <style>
+        .error {
+            color: #fff;
+            font-size: 12px;
+            height: 20px;
+            padding: 5px;
+        }
+    </style>
+    ```
 
 </head>
 
 <body>
 
-```
-<header>
+    ```
+    <header>
 
-    <div class="top-bar">
-        <a href="/patient/signup">
-            <button class="signup-btn">Sign Up</button>
-        </a>
-    </div>
+        <div class="top-bar">
+            <a href="/patient/signup">
+                <button class="signup-btn">Sign Up</button>
+            </a>
+        </div>
 
-    <div class="logo-bar">
-        <h1>
-            <span class="green">+</span>
-            <span class="green">Medi</span><span class="blue">City</span>
-        </h1>
-    </div>
+        <div class="logo-bar">
+            <h1>
+                <span class="green">+</span>
+                <span class="green">Medi</span><span class="blue">City</span>
+            </h1>
+        </div>
 
-</header>
+    </header>
 
-<main>
+    <main>
 
-    <div class="login-card">
+        <div class="login-card">
 
-        <div class="left-panel">
+            <div class="left-panel">
 
-            <h2>
-                Precision Care,<br>
-                Simplified.
-            </h2>
+                <h2>
+                    Precision Care,<br>
+                    Simplified.
+                </h2>
 
-            <p>
-                Medicity's integrated platform deliver exceptional patient outcomes through advanced clinical management.
-            </p>
+                <p>
+                    Medicity's integrated platform deliver exceptional patient outcomes through advanced clinical
+                    management.
+                </p>
 
-            <div class="image-box"></div>
+                <div class="image-box"></div>
 
-            <div class="joined">
+                <div class="joined">
 
-                <div class="avatars">
-                    <span>DR</span>
-                    <span>NS</span>
-                    <span>AD</span>
+
                 </div>
 
-                <small>Joined by 100+ healthcare professionals</small>
+            </div>
+
+            <div class="right-panel">
+
+                <h2>Welcome to Medicity</h2>
+
+                {{if .error}}
+                <div class="error" style="color: brown;">
+                    {{.error}}
+                </div>
+                {{end}}
+{{if .message}}
+                <div class="success-message" style="color: green;">
+                    {{.message  }}
+                </div>
+                {{end}}
+
+                <form name="Login" onsubmit="return validateForm()" class="login-form" id="login"
+                    action="/patient/login" method="POST">
+
+                    <label>Email / Phone</label>
+
+                    <div class="input-box">
+
+                        <i class="fa-regular fa-user"></i>
+
+                        <input type="text" placeholder="Enter email or phone number" name="username" id="username"
+                            onblur="checkUsername()">
+
+                    </div>
+
+                    <div id="usernameError" class="error"></div>
+
+                    <label>Password</label>
+
+                    <div class="password-title">
+
+                        <span></span>
+
+                        <a href="/patient/forgot-password">Forgot Password?</a>
+
+
+                    </div>
+
+                    <div class="input-box">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input type="password" placeholder="••••••••" name="password" id="password"
+                            onblur="checkPassword()">
+
+                        <i class="fa-regular fa-eye" id="togglePassword" style="cursor: pointer;"></i>
+
+                    </div>
+
+                    <div id="passwordError" class="error"></div>
+
+                    <button class="login-btn" type="submit">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+
+                        Login
+
+                    </button>
+
+                </form>
+
+                <div class="divider">
+
+                    <span>HOSPITAL NETWORK ACCESS</span>
+
+                </div>
+
+                <p class="create-account">
+
+                    <a href="/patient/signup">Create Account</a>
+                    if not registered with Us
+
+                </p>
 
             </div>
 
         </div>
 
-        <div class="right-panel">
+    </main>
 
-            <h2>Welcome to Medicity</h2>
+    <footer>
 
-            {{if .error}}
-            <div class="error" style="color: brown;">
-                {{.error}}
-            </div>
-            {{end}}
+        © 2026 MediCity Hospital. All Rights Reserved.
 
-            <form
-                name="Login"
-                onsubmit="return validateForm()"
-                class="login-form"
-                id="login"
-                action="/patient/login"
-                method="POST">
-
-                <label>Email / Phone</label>
-
-                <div class="input-box">
-
-                    <i class="fa-regular fa-user"></i>
-
-                    <input
-                        type="text"
-                        placeholder="Enter email or phone number"
-                        name="username"
-                        id="username"
-                        onblur="checkUsername()">
-
-                </div>
-
-                <div id="usernameError" class="error"></div>
-
-                <label>Password</label>
-
-                <div class="password-title">
-
-                    <span></span>
-
-                    <a href="#">Forgot Password?</a>
-
-                </div>
-
-                <div class="input-box">
-
-                    <i class="fa-solid fa-lock"></i>
-
-                    <input
-                        type="password"
-                        placeholder="••••••••"
-                        name="password"
-                        id="password"
-                        onblur="checkPassword()">
-
-                    <i class="fa-regular fa-eye"></i>
-
-                </div>
-
-                <div id="passwordError" class="error"></div>
-
-                <div class="remember">
-
-                    <input type="checkbox">
-
-                    <span>Stay signed in for 24 hours</span>
-
-                </div>
-
-                <button class="login-btn" type="submit">
-
-                    <i class="fa-solid fa-right-to-bracket"></i>
-
-                    Login
-
-                </button>
-
-            </form>
-
-            <div class="divider">
-
-                <span>HOSPITAL NETWORK ACCESS</span>
-
-            </div>
-
-            <p class="create-account">
-
-                <a href="/patient/signup">Create Account</a>
-                if not registered with Us
-
-            </p>
-
-        </div>
-
-    </div>
-
-</main>
-
-<footer>
-
-    © 2026 MediCity Hospital. All Rights Reserved.
-
-</footer>
+    </footer>
 
 
-<script>
+    <script>
 
-    function validateForm() {
+        function validateForm() {
 
-        let username = document.getElementById("username").value.trim();
-        let password = document.getElementById("password").value.trim();
+            let username = document.getElementById("username").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let usernameError = document.getElementById("usernameError");
+            let passwordError = document.getElementById("passwordError");
 
-        let usernameError = document.getElementById("usernameError");
-        let passwordError = document.getElementById("passwordError");
+            let flag = 1;
 
-        let flag = 1;
+            // Email validation
+            let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // Email validation
-        let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        // Phone validation
-        // Accepts 10 digit Indian phone numbers
-        let phonePattern = /^[6-9]\d{9}$/;
+            // Phone validation
+            // Accepts 10 digit Indian phone numbers
+            let phonePattern = /^[6-9]\d{9}$/;
 
 
-        if (username === "") {
+            if (username === "") {
 
-            usernameError.textContent = "Email or phone number is required";
-            usernameError.style.backgroundColor = "#ff0000";
+                usernameError.textContent = "Email or phone number is required";
+                usernameError.style.backgroundColor = "#ff0000";
 
-            flag = 0;
+                flag = 0;
 
-        }
-        else if (
-            !emailPattern.test(username) &&
-            !phonePattern.test(username)
-        ) {
+            }
+            else if (
+                !emailPattern.test(username) &&
+                !phonePattern.test(username)
+            ) {
 
-            usernameError.textContent =
-                "Enter a valid email or 10-digit phone number";
+                usernameError.textContent =
+                    "Enter a valid email or 10-digit phone number";
 
-            usernameError.style.backgroundColor = "#ff0000";
+                usernameError.style.backgroundColor = "#ff0000";
 
-            flag = 0;
+                flag = 0;
 
-        }
-        else {
+            }
+            else {
 
-            usernameError.textContent = "";
-            usernameError.style.backgroundColor = "";
+                usernameError.textContent = "";
+                usernameError.style.backgroundColor = "";
 
+            }
+
+
+            // Password validation
+
+            if (password === "") {
+
+                passwordError.textContent = "Password is required";
+                passwordError.style.backgroundColor = "#ff0000";
+
+                flag = 0;
+
+            }
+            else if (password.length < 8) {
+
+                passwordError.textContent =
+                    "Password must be at least 8 characters";
+
+                passwordError.style.backgroundColor = "#ff0000";
+
+                flag = 0;
+
+            }
+            else {
+
+                passwordError.textContent = "";
+                passwordError.style.backgroundColor = "";
+
+            }
+
+
+            return flag === 1;
         }
 
 
-        // Password validation
+        function checkUsername() {
 
-        if (password === "") {
+            const input = document.getElementById("username");
+            const error = document.getElementById("usernameError");
 
-            passwordError.textContent = "Password is required";
-            passwordError.style.backgroundColor = "#ff0000";
+            const username = input.value.trim();
 
-            flag = 0;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phonePattern = /^[6-9]\d{9}$/;
 
+
+            if (username === "") {
+
+                error.textContent = "Email or phone number is required";
+                error.style.backgroundColor = "#ff0000";
+
+            }
+            else if (
+                !emailPattern.test(username) &&
+                !phonePattern.test(username)
+            ) {
+
+                error.textContent =
+                    "Enter a valid email or 10-digit phone number";
+
+                error.style.backgroundColor = "#ff0000";
+
+            }
+            else {
+
+                error.textContent = "";
+                error.style.backgroundColor = "";
+
+            }
         }
-        else if (password.length < 8) {
 
-            passwordError.textContent =
-                "Password must be at least 8 characters";
 
-            passwordError.style.backgroundColor = "#ff0000";
+        function checkPassword() {
 
-            flag = 0;
+            const input = document.getElementById("password");
+            const error = document.getElementById("passwordError");
 
+            const password = input.value.trim();
+
+
+            if (password === "") {
+
+                error.textContent = "Password is required";
+                error.style.backgroundColor = "#ff0000";
+
+            }
+            else if (password.length < 8) {
+
+                error.textContent =
+                    "Password must contain at least 8 characters";
+
+                error.style.backgroundColor = "#ff0000";
+
+            }
+            else {
+
+                error.textContent = "";
+                error.style.backgroundColor = "";
+
+            }
         }
-        else {
-
-            passwordError.textContent = "";
-            passwordError.style.backgroundColor = "";
-
-        }
 
 
-        return flag === 1;
-    }
+        const passwordInput = document.getElementById("password");
 
+        const togglePassword = document.getElementById("togglePassword");
 
-    function checkUsername() {
+        togglePassword.addEventListener("click", function () {
 
-        const input = document.getElementById("username");
-        const error = document.getElementById("usernameError");
+            if (passwordInput.type === "password") {
 
-        const username = input.value.trim();
+                passwordInput.type = "text";
 
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phonePattern = /^[6-9]\d{9}$/;
+                togglePassword.classList.remove("fa-eye");
+                togglePassword.classList.add("fa-eye-slash");
 
+            } else {
 
-        if (username === "") {
+                passwordInput.type = "password";
 
-            error.textContent = "Email or phone number is required";
-            error.style.backgroundColor = "#ff0000";
+                togglePassword.classList.remove("fa-eye-slash");
+                togglePassword.classList.add("fa-eye");
+            }
 
-        }
-        else if (
-            !emailPattern.test(username) &&
-            !phonePattern.test(username)
-        ) {
-
-            error.textContent =
-                "Enter a valid email or 10-digit phone number";
-
-            error.style.backgroundColor = "#ff0000";
-
-        }
-        else {
-
-            error.textContent = "";
-            error.style.backgroundColor = "";
-
-        }
-    }
-
-
-    function checkPassword() {
-
-        const input = document.getElementById("password");
-        const error = document.getElementById("passwordError");
-
-        const password = input.value.trim();
-
-
-        if (password === "") {
-
-            error.textContent = "Password is required";
-            error.style.backgroundColor = "#ff0000";
-
-        }
-        else if (password.length < 8) {
-
-            error.textContent =
-                "Password must contain at least 8 characters";
-
-            error.style.backgroundColor = "#ff0000";
-
-        }
-        else {
-
-            error.textContent = "";
-            error.style.backgroundColor = "";
-
-        }
-    }
-
-</script>
-```
+        });
+    </script>
+    ```
 
 </body>
 

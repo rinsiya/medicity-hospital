@@ -38,6 +38,7 @@ func MigrateDatabase() error {
 		&models.Refund{},
 		&models.Withdrawal{}, 
 	&models.Notification{},
+	&models.PasswordReset{},
 	)
 
 	if err != nil {

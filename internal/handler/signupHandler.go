@@ -206,7 +206,7 @@ func (h *SignupHandler) ShowOTPPendingPage(c *gin.Context) {
 	)
 
 	// Generate a new OTP
-	err := h.signupService.GenerateAndSendOTP(phone)
+	otpHash,err := h.signupService.GenerateAndSendOTP(phone)
 
 	if err != nil {
 
@@ -226,6 +226,27 @@ func (h *SignupHandler) ShowOTPPendingPage(c *gin.Context) {
 		})
 
 		return
+	}else{
+	err := h.signupService.SaveOTPPendingUser(otpHash,phone)
+if err!=nil{
+			logger.Log.Error(
+			"Failed to save OTP",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+
+		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
+			"phone":   phone,
+			"role":    role,
+			"error":   "Unable to send OTP. Please try again.",
+			"success": false,
+			//"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
+
+		})
+
+		return
+
+}
 	}
 
 	// Get updated pending user

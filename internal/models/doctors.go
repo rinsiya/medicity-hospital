@@ -18,6 +18,8 @@ type Doctor struct {
 
 	LastName string `gorm:"size:50;not null"`
 
+	ProfessionalRole string `gorm:"size:100"`
+
 	DepartmentID *uint `gorm:"index"`
 
 	ConsultationFee int 

@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCity - Patient Dashboard</title>
+    <link rel="stylesheet" href="/static/css/patientHome.css">
+    <style>
+        .vital-section {
+            margin-top: 20px;
+        }
+
+
+        /* ==========================================
+   SAVED VITAL DATA
+========================================== */
+
+        .vital-data-card {
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .vital-data-card h3,
+        .add-vital h3,
+        .entered-vitals h3 {
+            font-size: 8px;
+            color: #385c4b;
+            margin-bottom: 10px;
+        }
+
+
+        .vital-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+
+        .vital-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+
+
+        .vital-table th {
+            text-align: left;
+            background: #eef2f1;
+            color: #596461;
+            font-size: 7px;
+            padding: 8px 10px;
+        }
+
+
+        .vital-table td {
+            padding: 9px 10px;
+            border-top: 1px solid #e1e6e5;
+            color: #424b48;
+        }
+
+
+        .vital-table td:first-child {
+            color: #245c41;
+            font-weight: 600;
+        }
+
+
+        .no-vitals {
+            text-align: center;
+            color: #858d8a !important;
+            font-weight: normal !important;
+            padding: 18px !important;
+        }
+
+
+        /* ==========================================
+   ADD VITAL AREA
+========================================== */
+
+        .add-vital-area {
+            display: grid;
+            grid-template-columns: 175px 1fr;
+            gap: 12px;
+        }
+
+
+        /* ==========================================
+   FORM
+========================================== */
+
+        .add-vital {
+            padding: 12px;
+        }
+
+
+        .add-vital label {
+            display: block;
+            font-size: 7px;
+            color: #59625f;
+            margin: 8px 0 4px;
+        }
+
+
+        .add-vital input {
+            width: 100%;
+            height: 27px;
+
+            border: 1px solid #d4dcda;
+            border-radius: 4px;
+
+            padding: 0 7px;
+
+            background: white;
+
+            color: #4e5855;
+
+            font-size: 7px;
+
+            outline: none;
+        }
+
+
+        .add-vital input:focus {
+            border-color: #16804d;
+        }
+
+
+        /* ==========================================
+   NEW VITAL DATA
+========================================== */
+
+        .entered-vitals {
+            padding: 12px;
+            min-height: 150px;
+        }
+
+
+        #new-vitals-list {
+            width: 100%;
+        }
+
+
+        .empty-message {
+            text-align: center;
+
+            color: #89918e;
+
+            font-size: 7px;
+
+            padding: 25px 5px;
+        }
+
+
+        /* ==========================================
+   NEW VITAL ITEM
+========================================== */
+
+        .new-vital-item {
+            display: grid;
+
+            grid-template-columns:
+                1.3fr 1fr 1fr 25px;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 8px 5px;
+
+            border-bottom: 1px solid #e5e9e8;
+        }
+
+
+        .new-vital-item:last-child {
+            border-bottom: none;
+        }
+
+
+        .new-vital-name {
+            font-size: 7px;
+
+            color: #245c41;
+
+            font-weight: 600;
+        }
+
+
+        .new-vital-value {
+            font-size: 8px;
+
+            font-weight: bold;
+
+            color: #333c39;
+        }
+
+
+        .new-vital-unit {
+            font-size: 6px;
+
+            color: #727a77;
+        }
+
+
+        .remove-vital {
+            border: none;
+
+            background: transparent;
+
+            color: #d33c3c;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+
+        .remove-vital:hover {
+            color: #a80000;
+        }
+
+
+        /* ==========================================
+   SAVE BUTTON
+========================================== */
+
+        .save-vitals-container {
+            display: flex;
+
+            justify-content: flex-end;
+
+            margin-top: 12px;
+        }
+
+
+        .save-vitals-btn {
+            border: none;
+
+            background: #006b32;
+
+            color: white;
+
+            border-radius: 5px;
+
+            padding: 9px 18px;
+
+            font-size: 8px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+
+        .save-vitals-btn:hover {
+            background: #005525;
+        }
+
+
+        .save-vitals-btn:disabled {
+            background: #9aa9a2;
+
+            cursor: not-allowed;
+        }
+
+
+        /* ==========================================
+   RESPONSIVE
+========================================== */
+
+        @media (max-width: 600px) {
+
+            .add-vital-area {
+                grid-template-columns: 1fr;
+            }
+
+            .new-vital-item {
+                grid-template-columns:
+                    1fr 1fr 1fr 25px;
+            }
+
+            .save-vitals-container {
+                justify-content: stretch;
+            }
+
+            .save-vitals-btn {
+                width: 100%;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-header">
+        <div class="utility-bar">
+            <a href="#">Feedback</a>
+            <a href="#">Search</a>
+            <form action="/patient/logout" method="POST">
+                <button class="sign-out">Sign out</button>
+            </form>
+        </div>
+
+        <div class="main-nav">
+            <a class="brand" href="#">
+                <span class="brand-plus">+</span><span>Medi</span><b>City</b>
+            </a>
+
+            <nav>
+                <a href="#">Our<br>Specialities</a>
+                <a href="#">Book<br>Appointment</a>
+                <a href="#" class="call-us">Call Us <span class="phone">●</span></a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="dashboard">
+
+            <div class="content">
+                <div class="welcome-row">
+                    <div>
+                        <h1>
+                            Welcome back, {{ .patient.FirstName }} {{ .patient.LastName }}
+                        </h1>
+                        <p>Here's a summary of your vital health and recent medical documents.</p>
+                    </div>
+                    <button type="button" id="scheduleAppointmentBtn" class="appointment-btn">
+                        ＋&nbsp; Schedule New Appointment
+                    </button>
+                </div>
+
+                <section class="section vital-section">
+
+                    <div class="section-heading">
+                        <h2>▣&nbsp; Vital health data</h2>
+                    </div>
+
+
+                    <!-- ==========================================
+         SAVED VITAL DATA
+    =========================================== -->
+
+                    <div class="vital-data-card card">
+
+                        <h3>RECORDED VITAL DATA</h3>
+
+                        <div class="vital-table-wrap">
+
+                            <table class="vital-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>VITAL</th>
+                                        <th>VALUE</th>
+                                        <th>RECORDED DATE</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="saved-vitals-body">
+
+                                    <tr>
+                                        <td colspan="3" class="no-vitals">
+                                            No vital data recorded yet.
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==========================================
+         ADD NEW VITAL
+    =========================================== -->
+
+                    <div class="add-vital-area">
+
+
+                        <!-- FORM -->
+
+                        <div class="add-vital card">
+
+                            <h3>RECORD NEW VITAL</h3>
+
+
+                            <label for="vital-name">
+                                Vital Name
+                            </label>
+
+                            <input type="text" id="vital-name" placeholder="Example: Blood Pressure"
+                                list="vital-suggestions">
+                            <datalist id="vital-suggestions">
+                                <option value="Blood Pressure">
+                                <option value="Heart Rate">
+                                <option value="Respiratory Rate">
+                                <option value="Body Temperature">
+                                <option value="Oxygen Saturation (SpO2)">
+                                <option value="Hemoglobin (Hb)">
+                                <option value="Blood Sugar (FBS)">
+                                <option value="Blood Sugar (PPBS)">
+                                <option value="Random Blood Sugar (RBS)">
+                                <option value="HbA1c">
+                                <option value="Total Cholesterol">
+                                <option value="HDL Cholesterol">
+                                <option value="LDL Cholesterol">
+                                <option value="Triglycerides">
+                                <option value="Weight">
+                                <option value="Height">
+                                <option value="BMI">
+                            </datalist>
+
+                            <label for="vital-value">
+                                Value
+                            </label>
+
+                            <input type="text" id="vital-value" placeholder="Example: 120/80">
+
+
+                            <label for="vital-unit">
+                                Unit
+                            </label>
+
+                            <input type="text" id="vital-unit" placeholder="Example: mmHg" list="unit-suggestions">
+                            <datalist id="unit-suggestions">
+                                <option value="mmHg">
+                                <option value="bpm">
+                                <option value="°C">
+                                <option value="°F">
+                                <option value="%">
+                                <option value="g/dL">
+                                <option value="mg/dL">
+                                <option value="mmol/L">
+                                <option value="kg">
+                                <option value="g">
+                                <option value="cm">
+                                <option value="m">
+                                <option value="kg/m²">
+                                <option value="breaths/min">
+                            </datalist>
+
+                            <button type="button" class="green-btn" onclick="addVital()">
+                                ＋ Add Vital
+                            </button>
+
+                        </div>
+
+
+                        <!-- NEWLY ADDED VITALS -->
+
+                        <div class="entered-vitals card">
+
+                            <h3>NEW VITAL DATA</h3>
+
+                            <div id="new-vitals-list">
+
+                                <p class="empty-message">
+                                    Added vital data will appear here.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==========================================
+         SAVE ALL
+    =========================================== -->
+
+                    <div class="save-vitals-container">
+
+                        <button type="button" class="save-vitals-btn" onclick="saveVitalData()">
+                            Save Vital Data
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <section class="section">
+                    <div class="section-heading">
+                        <h2>▣&nbsp; Recent Appointments</h2>
+                        <a href="#">View All</a>
+                    </div>
+
+                    <div class="table-wrap card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>APPOINTMENT_ID</th>
+                                    <th>DATE</th>
+                                    <th>DOCTOR</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-appointments-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center;">
+                                        Loading appointments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="bottom-grid">
+                    <section class="section">
+                        <div class="section-heading">
+                            <h2>▣&nbsp; Medical Reports</h2>
+                            <a href="#">View All</a>
+                        </div>
+
+                        <div class="reports card" id="medical-reports">
+
+                            <div class="drop-zone">
+                                <div class="upload-icon">⇧</div>
+                                <b>Drop files here or browse</b>
+                                <span>Supports Lab Reports, X-Ray, ECGs (Max 10MB)</span>
+                            </div>
+
+                            <div id="medical-reports-list">
+                                <p>Loading medical reports...</p>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <div class="section-heading">
+                            <h2>▣&nbsp; Prescription History</h2>
+                            <a href="#">View All</a>
+                        </div>
+
+                        <div class="prescriptions card">
+
+                            <div class="prescription-head">
+                                <b>DATE</b>
+                                <b>DOCTOR DETAILS</b>
+                            </div>
+
+                            <div id="recent-prescriptions-list">
+                                <p style="text-align: center;">
+                                    Loading prescriptions...
+                                </p>
+                            </div>
+
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <aside class="profile">
+                <div class="profile-header">
+                    <div class="avatar">
+                        <img src="{{ .patient.ProfilePhoto }}" alt="Profile Photo">
+                    </div>
+
+                    <h3> {{ .patient.FirstName }} {{ .patient.LastName }}</h3>
+                    <p>{{ .patient.PatientID }}</p>
+                </div>
+
+                <div class="profile-block">
+                    <h4>PERSONAL DETAILS</h4>
+                    <dl>
+                        <dt>Age</dt>
+                        <dd id="patient-age" data-dob="{{ .patient.DOB }}"></dd>
+                        <dt>Gender</dt>
+                        <dd>{{ .patient.Gender }}</dd>
+                        <dt>Height</dt>
+                        <dd>{{ .patient.Height }} cm</dd>
+                        <dt>Weight</dt>
+                        <dd>{{ .patient.Weight }} kg</dd>
+                    </dl>
+                </div>
+
+                <div class="profile-block contact">
+                    <h4>CONTACT INFO</h4>
+                    <p>✉ <span>{{ .user.Email }}</span> <b>●</b></p>
+                    <p>☏ <span>{{ .user.Phone }}</span> <b>●</b></p>
+                </div>
+
+                <div class="address-card">
+                    <h3>Address</h3>
+                    <small>PRESTIGE OCEAN APARTMENTS</small>
+                    <p>CALICUT<br>INDIA</p>
+                    <button class="green-btn">＋ Edit address</button>
+                </div>
+
+               <!-- <button class="add-address">＋ Add your address</button>
+          -->  </aside>
+        </section>
+    </main>
+
+    <footer>
+        © 2026 MediCity Hospital. All Rights Reserved.
+    </footer>
+    <script>
+
+        document.getElementById("scheduleAppointmentBtn").addEventListener("click", async function () {
+
+            try {
+                const response = await fetch("/patient/profile/complete", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.message);
+                }
+
+            } catch (error) {
+                console.error("Error checking profile:", error);
+                alert("Something went wrong. Please try again.");
+            }
+        });
+
+        function calculateAge(dob) {
+
+            const birthDate = new Date(dob);
+            const today = new Date();
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+
+            const monthDifference =
+                today.getMonth() - birthDate.getMonth();
+
+            if (
+                monthDifference < 0 ||
+                (
+                    monthDifference === 0 &&
+                    today.getDate() < birthDate.getDate()
+                )
+            ) {
+                age--;
+            }
+
+            return age;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const ageElement =
+                document.getElementById("patient-age");
+
+            const dob =
+                ageElement.dataset.dob;
+
+            ageElement.textContent =
+                calculateAge(dob) + " years";
+
+        });
+
+
+        let newVitals = [];
+
+        let isSaving = false;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            loadVitalData();
+            loadRecentAppointments();
+            loadRecentMedicalReports();
+            loadRecentPrescriptions();
+
+        });
+        async function loadRecentPrescriptions() {
+
+            const container =
+                document.getElementById("recent-prescriptions-list");
+
+            if (!container) {
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+                    "/patient/prescriptions/recent",
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                if (response.status === 401) {
+
+                    console.log("Patient is not authenticated.");
+
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!response.ok) {
+
+                    console.error(
+                        result.message ||
+                        "Failed to load prescriptions."
+                    );
+
+                    showNoPrescriptions();
+
+                    return;
+                }
+
+                const prescriptions = result.data || [];
+
+                displayRecentPrescriptions(prescriptions);
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading prescriptions:",
+                    error
+                );
+
+                showNoPrescriptions();
+            }
+        }
+
+        function displayRecentPrescriptions(prescriptions) {
+
+            const container =
+                document.getElementById("recent-prescriptions-list");
+
+            if (!container) {
+                return;
+            }
+
+            if (
+                !prescriptions ||
+                !Array.isArray(prescriptions) ||
+                prescriptions.length === 0
+            ) {
+
+                showNoPrescriptions();
+
+                return;
+            }
+
+            container.innerHTML = "";
+
+            prescriptions.forEach(function (prescription) {
+
+                const row =
+                    document.createElement("div");
+
+                row.className = "prescription-row";
+
+                row.innerHTML = `
+            <span>
+                ${formatDate(prescription.created_at)}
+            </span>
+
+            <div>
+                <b>
+                    ${escapeHTML(prescription.doctor_name)}
+                </b>
+                  <small>
+        ${escapeHTML(prescription.professional_role || "")}
+    </small>
+            </div>
+        `;
+
+                container.appendChild(row);
+
+            });
+        }
+        function showNoPrescriptions() {
+
+            const container =
+                document.getElementById("recent-prescriptions-list");
+
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = `
+        <p style="text-align: center;">
+            No prescriptions found.
+        </p>
+    `;
+        }
+
+        async function loadRecentMedicalReports() {
+
+            const container =
+                document.getElementById("medical-reports-list");
+
+            try {
+
+                const response = await fetch(
+                    "/patient/medical-reports/recent",
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                if (response.status === 401) {
+
+                    console.log("Patient is not authenticated.");
+
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!response.ok) {
+
+                    console.error(
+                        result.message ||
+                        "Failed to load medical reports."
+                    );
+
+                    showNoMedicalReports();
+
+                    return;
+                }
+
+                const files = result.data || [];
+
+                displayMedicalReports(files);
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading medical reports:",
+                    error
+                );
+
+                showNoMedicalReports();
+            }
+        }
+
+
+        function displayMedicalReports(files) {
+
+            const container =
+                document.getElementById("medical-reports-list");
+
+            if (!container) {
+                return;
+            }
+
+            if (!files || files.length === 0) {
+
+                showNoMedicalReports();
+
+                return;
+            }
+
+            container.innerHTML = "";
+
+            files.forEach(function (file) {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "file " + getFileClass(file.file_type);
+
+                item.innerHTML = `
+            <span>▤</span>
+
+            <div>
+                <b>${escapeHTML(file.file_name)}</b>
+
+                <small>
+                    ${escapeHTML(file.category)}
+                    · ${formatDate(file.uploaded_at)}
+                </small>
+            </div>
+        `;
+
+                container.appendChild(item);
+
+            });
+        }
+
+        function showNoMedicalReports() {
+
+            const container =
+                document.getElementById("medical-reports-list");
+
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = `
+        <p style="text-align:center;">
+            No medical reports found.
+        </p>
+    `;
+        }
+
+        function getFileClass(fileType) {
+
+            if (!fileType) {
+                return "blue";
+            }
+
+            fileType = fileType.toLowerCase();
+
+            if (fileType.includes("pdf")) {
+                return "red";
+            }
+
+            if (
+                fileType.includes("jpg") ||
+                fileType.includes("jpeg") ||
+                fileType.includes("png")
+            ) {
+                return "blue";
+            }
+
+            return "green";
+        }
+
+        async function loadRecentAppointments() {
+
+            const tbody =
+                document.getElementById("recent-appointments-body");
+
+            try {
+
+                const response = await fetch(
+                    "/patient/appointments/recent",
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                if (response.status === 401) {
+
+                    console.log("Patient is not authenticated.");
+
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!response.ok) {
+
+                    console.error(
+                        result.message ||
+                        "Failed to load appointments."
+                    );
+
+                    showNoAppointments();
+
+                    return;
+                }
+
+                const appointments = result.data || [];
+
+                displayRecentAppointments(appointments);
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading appointments:",
+                    error
+                );
+
+                showNoAppointments();
+            }
+        }
+        function displayRecentAppointments(appointments) {
+
+            const tbody =
+                document.getElementById("recent-appointments-body");
+
+            if (!tbody) {
+                return;
+            }
+
+            if (
+                !appointments ||
+                !Array.isArray(appointments) ||
+                appointments.length === 0
+            ) {
+
+                showNoAppointments();
+
+                return;
+            }
+
+            tbody.innerHTML = "";
+
+            appointments.forEach(function (appointment) {
+
+                const row = document.createElement("tr");
+                const doctorName =
+                    `${appointment.doctor.first_name} ${appointment.doctor.last_name}`;
+                row.innerHTML = `
+            <td>
+                #${escapeHTML(String(appointment.appointment_id))}
+            </td>
+
+            <td>
+                ${formatDate(appointment.appointment_date)}
+            </td>
+
+            <td>
+                <b>
+                    ${escapeHTML(
+                    doctorName || "-"
+                )}
+                    
+                </b>
+            </td>
+
+            <td>
+                <span class="status ${getStatusClass(appointment.status)}">
+                    ${escapeHTML(appointment.status || "-")}
+                </span>
+            </td>
+        `;
+
+                tbody.appendChild(row);
+
+            });
+        }
+
+        function showNoAppointments() {
+
+            const tbody =
+                document.getElementById("recent-appointments-body");
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.innerHTML = `
+        <tr>
+            <td colspan="4" style="text-align: center;">
+                No appointments found.
+            </td>
+        </tr>
+    `;
+        }
+        function getStatusClass(status) {
+
+            if (!status) {
+                return "";
+            }
+
+            return status
+                .toLowerCase()
+                .replace(/\s+/g, "-");
+        }
+
+
+
+
+        function addVital() {
+
+            const nameInput =
+                document.getElementById("vital-name");
+
+            const valueInput =
+                document.getElementById("vital-value");
+
+            const unitInput =
+                document.getElementById("vital-unit");
+
+
+            const name =
+                nameInput.value.trim();
+
+            const value =
+                valueInput.value.trim();
+
+            const unit =
+                unitInput.value.trim();
+
+            if (name === "") {
+
+                alert("Please enter the vital name.");
+
+                nameInput.focus();
+
+                return;
+            }
+
+
+            if (value === "") {
+
+                alert("Please enter the vital value.");
+
+                valueInput.focus();
+
+                return;
+            }
+
+
+            if (unit === "") {
+
+                alert("Please enter the unit.");
+
+                unitInput.focus();
+
+                return;
+            }
+
+
+            const vital = {
+
+                name: name,
+
+                value: value,
+
+                unit: unit,
+
+                recorded_at:
+                    new Date().toISOString()
+
+            };
+
+            newVitals.push(vital);
+            displayNewVitals();
+            nameInput.value = "";
+
+            valueInput.value = "";
+
+            unitInput.value = "";
+            nameInput.focus();
+
+        }
+
+        function displayNewVitals() {
+
+            const container =
+                document.getElementById(
+                    "new-vitals-list"
+                );
+
+            if (newVitals.length === 0) {
+
+                container.innerHTML = `
+                <p class="empty-message">
+                    Added vital data will appear here.
+                </p>
+            `;
+
+                return;
+            }
+            container.innerHTML = "";
+            newVitals.forEach(
+                function (vital, index) {
+
+                    const item =
+                        document.createElement("div");
+
+
+                    item.className =
+                        "new-vital-item";
+
+
+                    item.innerHTML = `
+
+                    <span class="new-vital-name">
+                        ${escapeHTML(vital.name)}
+                    </span>
+
+                    <span class="new-vital-value">
+                        ${escapeHTML(vital.value)}
+                    </span>
+
+                    <span class="new-vital-unit">
+                        ${escapeHTML(vital.unit)}
+                    </span>
+
+                    <button
+                        type="button"
+                        class="remove-vital"
+                        onclick="removeVital(${index})"
+                        title="Remove"
+                    >
+                        ×
+                    </button>
+
+                `;
+
+
+                    container.appendChild(item);
+
+                }
+            );
+
+        }
+
+        function removeVital(index) {
+
+            if (
+                index < 0 ||
+                index >= newVitals.length
+            ) {
+                return;
+            }
+
+
+            newVitals.splice(index, 1);
+
+
+            displayNewVitals();
+
+        }
+
+        async function saveVitalData() {
+
+            if (isSaving) {
+                return;
+            }
+            if (newVitals.length === 0) {
+
+                alert(
+                    "Please add at least one vital before saving."
+                );
+
+                return;
+            }
+
+            const confirmed = confirm(
+                "Do you want to save all entered vital data?"
+            );
+            if (!confirmed) {
+                return;
+            }
+            isSaving = true;
+            const saveButton =
+                document.querySelector(
+                    ".save-vitals-btn"
+                );
+            if (saveButton) {
+
+                saveButton.disabled = true;
+
+                saveButton.textContent =
+                    "Saving...";
+
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    "/patient/vitals",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        // JWT is stored in access_token cookie
+                        credentials: "include",
+
+                        body: JSON.stringify({
+                            vitals: newVitals
+                        })
+                    }
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    alert(
+                        result.message ||
+                        "Failed to save vital data."
+                    );
+
+                    return;
+                }
+                alert(
+                    result.message ||
+                    "Vital data saved successfully."
+                );
+                newVitals = [];
+                displayNewVitals();
+                await loadVitalData();
+            } catch (error) {
+
+                console.error(
+                    "Error saving vital data:",
+                    error
+                );
+                alert(
+                    "Unable to save vital data. Please try again."
+                );
+
+            } finally {
+
+                isSaving = false;
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent =
+                        "Save Vital Data";
+                }
+            }
+        }
+
+
+        async function loadVitalData() {
+            try {
+                const response = await fetch(
+                    "/patient/vitals",
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                if (response.status === 401) {
+
+                    console.log(
+                        "Patient is not authenticated."
+                    );
+
+                    return;
+                }
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        result.message ||
+                        "Failed to load vital data."
+                    );
+
+                    return;
+                }
+
+                const vitals =
+                    result.data || [];
+
+
+                displaySavedVitals(vitals);
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading vital data:",
+                    error
+                );
+            }
+        }
+
+        function displaySavedVitals(vitals) {
+
+            const tbody =
+                document.getElementById(
+                    "saved-vitals-body"
+                );
+
+
+            if (!tbody) {
+
+                console.error(
+                    "saved-vitals-body not found."
+                );
+
+                return;
+            }
+
+            if (
+                !vitals ||
+                !Array.isArray(vitals) ||
+                vitals.length === 0
+            ) {
+
+                tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="3"
+                        class="no-vitals"
+                    >
+                        No vital data recorded yet.
+                    </td>
+                </tr>
+            `;
+
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // CLEAR TABLE
+            // -----------------------------------------------------
+
+            tbody.innerHTML = "";
+
+
+            // -----------------------------------------------------
+            // DISPLAY VITALS
+            // -----------------------------------------------------
+
+            vitals.forEach(function (vital) {
+
+                const row =
+                    document.createElement("tr");
+
+
+                const nameCell =
+                    document.createElement("td");
+
+                const valueCell =
+                    document.createElement("td");
+
+                const dateCell =
+                    document.createElement("td");
+
+
+                // Vital name
+
+                nameCell.textContent =
+                    vital.name;
+
+
+                // Value + unit
+
+                valueCell.textContent =
+                    vital.unit
+                        ? `${vital.value} ${vital.unit}`
+                        : vital.value;
+
+
+                // Date
+
+                dateCell.textContent =
+                    formatDate(
+                        vital.recorded_at
+                    );
+
+
+                row.appendChild(nameCell);
+
+                row.appendChild(valueCell);
+
+                row.appendChild(dateCell);
+
+
+                tbody.appendChild(row);
+
+            });
+
+        }
+
+
+        // =========================================================
+        // DATE FORMAT
+        // =========================================================
+
+        function formatDate(dateValue) {
+
+            if (!dateValue) {
+                return "-";
+            }
+
+
+            const date =
+                new Date(dateValue);
+
+
+            if (
+                isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "-";
+            }
+
+
+            return date.toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+
+        }
+
+
+
+        function escapeHTML(value) {
+
+            const div =
+                document.createElement("div");
+
+
+            div.textContent =
+                value;
+
+
+            return div.innerHTML;
+
+        }
+
+    </script>
+</body>
+
+</html>

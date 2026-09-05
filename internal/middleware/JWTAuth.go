@@ -1,41 +1,75 @@
 package middleware
 
 import (
-	"net/http"
-	"strings"
+    "net/http"
+    "medicity/pkg/utils"
 
-	"github.com/gin-gonic/gin"
-	"medicity/pkg/utils"
+    "github.com/gin-gonic/gin"
 )
+func JWTAuth(role string) gin.HandlerFunc {
 
-func JWTAuth() gin.HandlerFunc {
+    return func(c *gin.Context) {
 
-	
-	return func(c *gin.Context) {
+        token, err := c.Cookie("access_token")
 
-		authHeader := c.GetHeader("Authorization")
+        if err != nil || token == "" {
+            c.Redirect(
+                http.StatusSeeOther,
+                "/"+role+"/login",
+            )
+            c.Abort()
+            return
+        }
 
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "missing token",
-			})
-			return
-		}
+        // Validate JWT first
+        claims, err := utils.ValidateJWT(token)
 
-		token := strings.TrimPrefix(authHeader, "Bearer ")
+        if err != nil {
+            // Invalid/expired token
+            c.SetCookie(
+                "access_token",
+                "",
+                -1,
+                "/",
+                "",
+                false,
+                true,
+            )
 
-		claims, err := utils.ValidateJWT(token)
+            c.Redirect(
+                http.StatusSeeOther,
+                "/"+role+"/login",
+            )
 
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid token",
-			})
-			return
-		}
+            c.Abort()
+            return
+        }
 
-		c.Set("userID", claims.UserID)
-		c.Set("role", claims.Role)
+        // JWT is valid, so now extract the values
+        c.Set("userID", claims.UserID)
+        c.Set("RoleID", claims.RoleID)
+        c.Set("role", claims.Role)
 
-		c.Next()
-	}
+        c.Next()
+    }
+}
+func RequireRole(requiredRole string) gin.HandlerFunc {
+
+    return func(c *gin.Context) {
+
+        role, exists := c.Get("role")
+
+        if !exists {
+            c.AbortWithStatus(http.StatusUnauthorized)
+            return
+        }
+
+        if role.(string) != requiredRole {
+
+            c.AbortWithStatus(http.StatusForbidden)
+            return
+        }
+
+        c.Next()
+    }
 }
