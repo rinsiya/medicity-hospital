@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Verification Dashboard - MediCity Hospital</title>
+    <meta name="description" content="MediCity Doctor Onboarding and Verification Dashboard. Update profile details, upload medical certifications, and track verification status.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="brand-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <span class="logo-text">MediCity</span>
+            </div>
+
+            <div class="header-actions">
+                <!-- Notification Dropdown -->
+                <div class="notification-wrapper">
+                    <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-header">
+                            <h4>Notifications</h4>
+                            <span class="unread-count">2 New</span>
+                        </div>
+                        <ul class="notif-list">
+                            <li class="notif-item unread">
+                                <i class="fa-solid fa-shield-halved notif-icon yellow"></i>
+                                <div class="notif-content">
+                                    <p><strong>Verification Pending:</strong> Your medical board review is currently in progress.</p>
+                                    <span class="notif-time">10 mins ago</span>
+                                </div>
+                            </li>
+                            <li class="notif-item unread">
+                                <i class="fa-solid fa-file-check notif-icon green"></i>
+                                <div class="notif-content">
+                                    <p><strong>License Verified:</strong> Medical_License.pdf was successfully indexed.</p>
+                                    <span class="notif-time">2 hours ago</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Sign Out Button -->
+                <button class="btn-signout" id="signOutBtn">
+                    Sign out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="dashboard-viewport">
+        <div class="dashboard-container">
+
+            <!-- Access Pending Verification Alert Banner -->
+            <section class="alert-banner" id="verificationAlert">
+                <div class="alert-icon-wrap">
+                    <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <div class="alert-body">
+                    <h2 class="alert-title">Access Pending Verification</h2>
+                    <p class="alert-description">
+                        Your profile is currently under review by our medical board. Ensure your profile is complete. Add all necessary documents for verification. Wait for your practitioner dashboard to be activated. All the best.
+                    </p>
+                </div>
+                <div class="alert-badge">
+                    <span class="pulse-dot"></span> Under Review
+                </div>
+            </section>
+
+            <!-- Dashboard Grid Layout -->
+            <div class="dashboard-grid">
+
+                <!-- LEFT COLUMN (60% Width) -->
+                <div class="grid-column column-left">
+
+                    <!-- 1. Registration Details Card -->
+                    <section class="card card-registration">
+                        <div class="card-header">
+                            <h3 class="card-title">Registration Details</h3>
+                            <button class="btn-text-edit" id="editProfileBtn">
+                                <i class="fa-solid fa-pen"></i> Edit Profile
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">FULL NAME</span>
+                                    <strong class="detail-value" id="dispFullName">Dr. Jonathan Sterling</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">PROFESSIONAL ROLE</span>
+                                    <strong class="detail-value" id="dispRole">Senior Cardiologist</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">EMAIL ADDRESS</span>
+                                    <span class="detail-value" id="dispEmail">j.sterling@medicity.org</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">CONTACT NUMBER</span>
+                                    <span class="detail-value" id="dispPhone">0919876543210</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">DEPARTMENT</span>
+                                    <strong class="detail-value" id="dispDept">Cardiology</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">YEARS OF EXPERIENCE</span>
+                                    <strong class="detail-value" id="dispExp">12</strong>
+                                </div>
+                                <div class="detail-item full-width">
+                                    <span class="detail-label">HOSPITAL</span>
+                                    <span class="detail-value" id="dispHospital">Heart & Vascular Center, Medical Plaza, Cochin</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. Professional Biography Card -->
+                    <section class="card card-biography">
+                        <div class="card-header">
+                            <div class="title-with-icon">
+                                <i class="fa-solid fa-file-signature section-icon"></i>
+                                <h3 class="card-title">Professional Biography</h3>
+                            </div>
+                            <button class="btn-icon-subtle" id="editBioBtn" title="Edit Biography">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="biography-box">
+                                <p id="dispBio">
+                                    Dr. Aris Thorne is a globally recognized Senior Cardiologist specializing in interventional cardiology and structural heart disease. With over 20 years of clinical experience, he has pioneered several minimally invasive techniques for valve repair. He serves as a consultant for the Heart & Vascular Institute and is a frequent keynote speaker at international medical symposia. His patient-centric approach focuses on integrating advanced technology with personalized care plans to ensure optimal outcomes and improved quality of life.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 3. Bottom Row Split Grid: Uploaded Documents & Qualifications -->
+                    <div class="sub-grid-row">
+
+                        <!-- Uploaded Documents Card -->
+                        <section class="card card-sub">
+                            <div class="card-header">
+                                <h3 class="card-title">Uploaded Documents</h3>
+                                <button class="btn-link" id="manageDocsBtn">Edit/Manage</button>
+                            </div>
+                            <div class="card-body">
+                                <ul class="document-list" id="documentList">
+                                    <li class="document-item" data-doc="Medical_License.pdf">
+                                        <div class="doc-info">
+                                            <i class="fa-solid fa-file-medical doc-icon"></i>
+                                            <span class="doc-name" title="Medical_License.pdf">Medical_License.pdf</span>
+                                        </div>
+                                        <div class="doc-actions">
+                                            <button class="btn-action download" title="Download Document" onclick="downloadSimulatedDoc('Medical_License.pdf')">
+                                                <i class="fa-solid fa-download"></i>
+                                            </button>
+                                            <button class="btn-action remove" title="Remove Document" onclick="removeDocument(this)">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <li class="document-item" data-doc="Board_Certificate.pdf">
+                                        <div class="doc-info">
+                                            <i class="fa-solid fa-shield-heart doc-icon"></i>
+                                            <span class="doc-name" title="Board_Certificate.pdf">Board_Certificatr.pdf</span>
+                                        </div>
+                                        <div class="doc-actions">
+                                            <button class="btn-action download" title="Download Document" onclick="downloadSimulatedDoc('Board_Certificate.pdf')">
+                                                <i class="fa-solid fa-download"></i>
+                                            </button>
+                                            <button class="btn-action remove" title="Remove Document" onclick="removeDocument(this)">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <li class="document-item" data-doc="CV_Thorne_2026.pdf">
+                                        <div class="doc-info">
+                                            <i class="fa-solid fa-file-pdf doc-icon"></i>
+                                            <span class="doc-name" title="CV_Thorne_2026.pdf">CV_Thorne_202...</span>
+                                        </div>
+                                        <div class="doc-actions">
+                                            <button class="btn-action download" title="Download Document" onclick="downloadSimulatedDoc('CV_Thorne_2026.pdf')">
+                                                <i class="fa-solid fa-download"></i>
+                                            </button>
+                                            <button class="btn-action remove" title="Remove Document" onclick="removeDocument(this)">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+
+                        <!-- Qualifications & Experience Card -->
+                        <section class="card card-sub">
+                            <div class="card-header">
+                                <div class="title-with-icon">
+                                    <i class="fa-solid fa-graduation-cap section-icon"></i>
+                                    <h3 class="card-title">Qualifications & Experience</h3>
+                                </div>
+                                <span class="badge-locked"><i class="fa-solid fa-lock"></i> System Locked</span>
+                            </div>
+                            <div class="card-body">
+                                <ul class="qualification-list">
+                                    <li class="qual-item">
+                                        <div class="qual-badge">
+                                            <i class="fa-solid fa-user-doctor"></i>
+                                        </div>
+                                        <div class="qual-details">
+                                            <strong>MD in Cardiology</strong>
+                                            <span>Harvard Medical School | 2008</span>
+                                        </div>
+                                    </li>
+                                    <li class="qual-item">
+                                        <div class="qual-badge secondary">
+                                            <i class="fa-solid fa-hospital-user"></i>
+                                        </div>
+                                        <div class="qual-details">
+                                            <strong>MBBS in General Medicine</strong>
+                                            <span>Johns Hopkins University | 2004</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN (40% Width) -->
+                <div class="grid-column column-right">
+
+                    <!-- 1. Public Profile Preview Card -->
+                    <section class="card card-profile-preview">
+                        <div class="preview-banner-header">
+                            <span class="preview-label">PUBLIC PROFILE PREVIEW</span>
+                            <span class="status-badge incomplete" id="completionBadge">INCOMPLETE</span>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="avatar-wrapper">
+                                <div class="avatar-circle">
+                                    <img src="file:///C:/Users/rinsiyakm/.gemini/antigravity/brain/c41df542-5bb5-4377-88d3-651d38da209e/doctor_avatar_1789650875118.png" alt="Dr. Jonathan Sterling" id="profileAvatarImg" onerror="this.src='https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop'">
+                                    <div class="avatar-overlay-btn" title="Change Photo" id="changeAvatarBtn">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4 class="preview-name" id="prevName">Dr. Jonathan Sterling</h4>
+                            <p class="preview-role" id="prevRole">Senior Cardiologist</p>
+
+                            <!-- Profile Completion Bar -->
+                            <div class="completion-container">
+                                <div class="completion-bar">
+                                    <div class="completion-fill" id="completionFill" style="width: 85%;"></div>
+                                </div>
+                                <span class="completion-text" id="completionText">85% Profile Completion</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. Document Upload Card -->
+                    <section class="card card-upload">
+                        <div class="card-header">
+                            <h3 class="card-title">Document Upload</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="uploadForm">
+                                <div class="dropzone" id="dropzone">
+                                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" class="file-input-hidden">
+                                    <div class="dropzone-content">
+                                        <div class="upload-icon-circle">
+                                            <i class="fa-solid fa-award"></i>
+                                        </div>
+                                        <p class="dropzone-text">Necessary Certificates and proof of experience</p>
+                                        <span class="dropzone-hint">PDF, JPG (Max 5MB)</span>
+                                        <div class="selected-file-tag" id="selectedFileTag" style="display:none;">
+                                            <i class="fa-solid fa-file-lines"></i>
+                                            <span id="selectedFileName">file.pdf</span>
+                                            <i class="fa-solid fa-xmark remove-file-btn" id="cancelFileBtn"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group remarks-group">
+                                    <label for="remarksInput" class="form-label">Remarks</label>
+                                    <input type="text" id="remarksInput" class="form-control" placeholder="Enter remarks or note for verification board...">
+                                </div>
+
+                                <button type="submit" class="btn-primary-upload" id="submitUploadBtn">
+                                    <span>Upload</span>
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- 3. Professional Experience Card -->
+                    <section class="card card-experience">
+                        <div class="card-header">
+                            <div class="title-with-icon">
+                                <i class="fa-solid fa-briefcase section-icon"></i>
+                                <h3 class="card-title">Professional Experience</h3>
+                            </div>
+                            <button class="btn-icon-add" id="addExpBtn" title="Add Experience">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <ul class="experience-list" id="experienceList">
+                                <li class="exp-item">
+                                    <div class="exp-info">
+                                        <strong class="exp-role">senior cardiologist</strong>
+                                        <span class="exp-period">2024 - Present | ABC Heart Hospital</span>
+                                    </div>
+                                    <button class="btn-remove-exp" onclick="removeExpItem(this)" title="Remove">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </li>
+                                <li class="exp-item">
+                                    <div class="exp-info">
+                                        <strong class="exp-role">cardiac surgeon</strong>
+                                        <span class="exp-period">2017 - 2021 | ABC Heart Hospital</span>
+                                    </div>
+                                    <button class="btn-remove-exp" onclick="removeExpItem(this)" title="Remove">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </li>
+                                <li class="exp-item">
+                                    <div class="exp-info">
+                                        <strong class="exp-role">junior cardiologist</strong>
+                                        <span class="exp-period">2014 - 2017 | City Central Clinic</span>
+                                    </div>
+                                    <button class="btn-remove-exp" onclick="removeExpItem(this)" title="Remove">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 MediCity Hospital. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Edit Profile Registration Details -->
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Edit Registration Details</h3>
+                <button class="modal-close-btn" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profileEditForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editFullName">Full Name</label>
+                            <input type="text" id="editFullName" class="form-control" value="Dr. Jonathan Sterling" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRole">Professional Role</label>
+                            <input type="text" id="editRole" class="form-control" value="Senior Cardiologist" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEmail">Email Address</label>
+                            <input type="email" id="editEmail" class="form-control" value="j.sterling@medicity.org" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhone">Contact Number</label>
+                            <input type="text" id="editPhone" class="form-control" value="0919876543210" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editDept">Department</label>
+                            <input type="text" id="editDept" class="form-control" value="Cardiology" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editExp">Years of Experience</label>
+                            <input type="number" id="editExp" class="form-control" value="12" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editHospital">Hospital / Institution</label>
+                        <input type="text" id="editHospital" class="form-control" value="Heart & Vascular Center, Medical Plaza, Cochin" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" id="cancelProfileModal">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Add Professional Experience -->
+    <div class="modal-overlay" id="addExpModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add Professional Experience</h3>
+                <button class="modal-close-btn" id="closeExpModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="expAddForm">
+                    <div class="form-group">
+                        <label for="newExpRole">Job Title / Role</label>
+                        <input type="text" id="newExpRole" class="form-control" placeholder="e.g. Chief Consultant Cardiologist" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newExpPeriod">Time Period & Hospital</label>
+                        <input type="text" id="newExpPeriod" class="form-control" placeholder="e.g. 2021 - 2024 | Mayo Clinic" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" id="cancelExpModal">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Experience</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Popup Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/script/script.js"></script>
+</body>
+</html>

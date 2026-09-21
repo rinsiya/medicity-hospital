@@ -14,7 +14,7 @@ type PendingUserSignup struct {
 
 	Password string `gorm:"size:255;not null"`
 
-	OTPHash string `gorm:"size:255;not null"`
+	SessionID string `gorm:"size:255;not null"`
 
 	OTPExpiresAt time.Time `gorm:"not null"`
 

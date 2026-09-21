@@ -11,9 +11,7 @@ import (
 	"medicity/internal/repository"
 	"medicity/logger"
 	"medicity/pkg/utils"
-
-	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
+    "go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -28,12 +26,10 @@ ErrEmailAndPhoneMismatch   = errors.New("Email Or phone registered ")
 type SignupService interface {
 	Signup(input *dto.SignupInput, role models.UserRole) (string,error)
 	ResendOTP(phone string) error
-	GenerateAndSendOTP(phone string) (string,error)
-	ValidateOTP(phone, otp string)(time.Time,error)
 	CreateUser(phone string) (*models.User,error)
 	FindPendingUserByPhone(phone string)(*models.PendingUserSignup,error)
 	UpdatePhone(oldPhone string,newPhone string) (models.UserRole,string,error)
-	VerifyOTPAndCreateUser(phone string,otp string) (time.Time, error)
+	//CreateUser(phone string,otp string) (time.Time, error)
 SaveOTPPendingUser(otpHash,phone string) error
 }
 
@@ -42,18 +38,26 @@ type signupService struct {
 	userRepo        repository.UserRepository
 	patientRepo     repository.PatientRepository
 	doctorRepo      repository.DoctorRepository
+	otpService      OTPService
 }
 
-func NewSignupService(pendingUserRepo repository.PendingUserSignupRepository, userRepo repository.UserRepository, patientRepo repository.PatientRepository,
-	doctorRepo repository.DoctorRepository) SignupService {
-	return &signupService{
-		pendingUserRepo: pendingUserRepo,
-		userRepo:        userRepo,
-		patientRepo:     patientRepo,
-		doctorRepo:      doctorRepo,
-	}
-}
 
+func NewSignupService(
+    otpservice OTPService,
+    pendingUserRepo repository.PendingUserSignupRepository,
+    userRepo repository.UserRepository,
+    patientRepo repository.PatientRepository,
+    doctorRepo repository.DoctorRepository,
+) SignupService {
+
+    return &signupService{
+        otpService:      otpservice,
+        pendingUserRepo: pendingUserRepo,
+        userRepo:        userRepo,
+        patientRepo:     patientRepo,
+        doctorRepo:      doctorRepo,
+    }
+}
 func (s *signupService) Signup(input *dto.SignupInput, role models.UserRole) (string,error) {
 
 	email := strings.ToLower(strings.TrimSpace(input.Email))
@@ -116,27 +120,46 @@ if user.Email==email{
 
 	if pendingUser != nil {
 						logger.Log.Warn(
-			"Signup rejected: email or phone already registered.",
+			"Signup rejected: email or phone already registered.phone verification pending.",
 			zap.String("email", email),
 			zap.String("phone", phone),
 			zap.String("role", string(role)),
 		)
 if pendingUser.Phone ==phone {
+					logger.Log.Warn(
+			"Signup rejected:phone already registered.phone verification pending.",
+					)
 	if pendingUser.Email==email{
-		return pendingUser.Phone,ErrPhonePendingVerification
-	}
-			return pendingUser.Phone,ErrEmailAndPhoneMismatch
+		logger.Log.Warn(
+			"Signup rejected:email and phone already registered.phone verification pending.",
+					)
+					logger.Log.Warn(
+			"Pending user exist .complete phone verification.",
+					)
+		   SessionID,err := s.otpService.SendOTP(phone)
+s.SaveOTPPendingUser(SessionID,phone)
+    if err != nil {
+        return pendingUser.Phone, err
+    }
+    logger.Log.Info(
+        "OTP for pending user send successfully",
+        zap.String("phone", phone),
+        
+    )
+        return pendingUser.Phone, nil
 
+    
 }
+		return pendingUser.Phone,ErrEmailAndPhoneMismatch
+	}
+		
 if pendingUser.Email==email{
 			return pendingUser.Phone,ErrEmailAndPhoneMismatch
 
 }
-
-
-	//	return pendingUser.Phone,ErrEmailAndPhoneAlreadyExists
-
 	}
+
+	
 
 	// Hash password
 	hashedPassword, err := utils.HashPassword(input.Password)
@@ -152,11 +175,12 @@ if pendingUser.Email==email{
 	}
 
 	
-	otpHash, err := s.GenerateAndSendOTP(phone)
+	sessionID, err := s.otpService.SendOTP(phone)
+	//GenerateAndSendOTP(phone)
 	if err != nil {
 
 		logger.Log.Error(
-			"Failed to hash signup OTP",
+			"Failed to send signup OTP",
 			zap.String("email", email),
 			zap.Error(err),
 		)
@@ -170,7 +194,7 @@ if pendingUser.Email==email{
 		Email:        email,
 		Phone:        phone,
 		Password:     hashedPassword,
-		OTPHash:      otpHash,
+		SessionID:      sessionID,
 		OTPExpiresAt: time.Now().Add(2 * time.Minute),
 		CreatedAt:    time.Now(),
 	}
@@ -187,9 +211,6 @@ if pendingUser.Email==email{
 
 		return phone,err
 	}
-
-
-
 	logger.Log.Info(
 		"Signup pending OTP verification",
 		zap.String("email", email),
@@ -201,52 +222,20 @@ if pendingUser.Email==email{
 
 func (s *signupService) ResendOTP(phone string) error {
 
-    otpHash,err := s.GenerateAndSendOTP(phone)
-s.SaveOTPPendingUser(otpHash,phone)
+    SessionID,err := s.otpService.SendOTP(phone)
+s.SaveOTPPendingUser(SessionID,phone)
     if err != nil {
         return err
     }
     logger.Log.Info(
         "OTP resent successfully",
         zap.String("phone", phone),
-        
     )
-
     return nil
 }
 
-func (s *signupService) GenerateAndSendOTP(phone string) (string,error) {
 
-
-	// Generate new OTP
-
-	otp, err := utils.GenerateOTP()
-	if err != nil {
-		logger.Log.Error(
-			"Failed to generate signup OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return "",err
-	}
-	println("OTP:", otp)
-
-	otpHash, err := utils.HashPassword(otp)
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to hash signup OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return "",err
-	}
-	return otpHash,nil
-	//return s.SaveOTPPendingUser(otpHash,phone)
-}
-func (s *signupService) SaveOTPPendingUser(otpHash, phone string) (error) {
+func (s *signupService) SaveOTPPendingUser(sessionID, phone string) (error) {
 	pendingUser, err := s.pendingUserRepo.FindByPhone(phone)
 
 	if err != nil {
@@ -259,7 +248,7 @@ func (s *signupService) SaveOTPPendingUser(otpHash, phone string) (error) {
 
 		return err
 	}
-	pendingUser.OTPHash = otpHash
+	pendingUser.SessionID= sessionID
 	pendingUser.OTPExpiresAt = time.Now().Add(2 * time.Minute)
 
 	err = s.pendingUserRepo.Update(pendingUser)
@@ -293,61 +282,8 @@ func (s *signupService) FindPendingUserByPhone(phone string) (*models.PendingUse
 	}
 	return pendingUser,err
 }
-func (s *signupService) ValidateOTP(phone string,otp string) (time.Time, error) {
 
-    pendingUser, err := s.pendingUserRepo.FindByPhone(phone)
 
-    if err != nil {
-        logger.Log.Error(
-            "Failed to find pending user by phone",
-            zap.String("phone", phone),
-            zap.Error(err),
-        )
-
-        return time.Time{}, err
-    }
-
-    if pendingUser == nil {
-        return time.Time{}, errors.New("pending signup not found")
-    }
-
-    // Keep the expiry time so the handler can send it back to UI
-    expiresAt := pendingUser.OTPExpiresAt
-
-    // Check expiry
-    if time.Now().After(expiresAt) {
-
-        logger.Log.Warn(
-            "OTP expired",
-            zap.String("phone", phone),
-        )
-
-        return expiresAt, errors.New("OTP expired")
-    }
-
-    // Compare OTP
-    err = bcrypt.CompareHashAndPassword(
-        []byte(pendingUser.OTPHash),
-        []byte(otp),
-    )
-
-    if err != nil {
-
-        logger.Log.Warn(
-            "Invalid OTP",
-            zap.String("phone", phone),
-        )
-
-        return expiresAt, errors.New("Invalid OTP")
-    }
-
-    logger.Log.Info(
-        "OTP verified successfully",
-        zap.String("phone", phone),
-    )
-
-    return expiresAt, nil
-}
 func (s *signupService) CreateUser(phone string) (*models.User,error) {
 
 	pendingUser, err := s.pendingUserRepo.FindByPhone(phone)
@@ -459,7 +395,7 @@ if err != nil {
         return "","",err
     }
 	// Generate OTP
-	otpHash,err := s.GenerateAndSendOTP(pendingUser.Phone)
+	otpHash,err := s.otpService.SendOTP(pendingUser.Phone)
 	    if err != nil {
 		logger.Log.Error(
         "Error while sending otp to new number",
@@ -486,30 +422,3 @@ return pendingUser.Role,pendingUser.Phone,nil
 
 }
 
-
-func (s *signupService) VerifyOTPAndCreateUser(phone string,otp string) (time.Time, error) {
-
-	// Find pending user
-	pendingUser, err := s.pendingUserRepo.FindByPhone(phone)
-
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	if pendingUser == nil {
-		return time.Time{}, errors.New(
-			"pending user not found",
-		)
-	}
-
-	// Validate OTP
-	otpExpiresAt, err := s.ValidateOTP(phone, otp)
-
-	if err != nil {
-		return otpExpiresAt, err
-	}
-
-
-
-	return otpExpiresAt, nil
-}

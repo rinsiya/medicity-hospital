@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Phone Number - MediCity</title>
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+    <link rel="stylesheet" href="/static/css/styles.css">
+<style>
+    .search-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.search-input input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px 14px;
+    font-size: 16px;
+    background: transparent;
+}
+
+.search-input input::placeholder {
+    color: #999;
+}
+
+.search-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    background-color: #00420E;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.search-btn:hover {
+    background-color: #00330B;
+}
+</style>
+</head>
+
+<body>
+
+    <div class="page">  
+
+        <header class="header">  
+            <div class="logo">
+                <span class="plus">+</span>
+                <span class="medi">Medi</span><span class="city">City</span>
+            </div>
+        </header>
+
+        <main class="main">
+
+            <section class="content-area">
+
+                <div class="card phone-card">
+
+                    <h1>Search</h1>
+
+                    <p class="subtitle">
+                       Search for doctors or specialities   </p>
+
+     <form class="form" action="/search" method="post">
+
+    <div class="search-input">
+        <input
+            id="searchkey"
+            name="searchkey"
+            type="text"
+            placeholder="Search doctor"
+            autocomplete="off"
+            required
+        >
+
+        <button class="search-btn" type="submit" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </div>
+
+</form>
+
+                    <a class="back-link" href="/verify-otp?phone={{urlquery .phone}}">
+                        ← Back to OTP verification
+                    </a>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            © 2026 MediCity Hospital. All Rights Reserved.
+        </footer>
+
+    </div>
+
+
+    <script>
+
+        function validatePhone() {
+
+            const phoneInput = document.getElementById("NewPhone");
+            const error = document.getElementById("phoneError");
+
+            const phone = phoneInput.value.trim();
+
+            // Clear previous error
+            error.textContent = "";
+
+            // Check empty
+            if (phone === "") {
+                error.textContent = "Please enter your phone number.";
+                phoneInput.focus();
+                return false;
+            }
+
+            /*
+             * International phone number validation.
+             *
+             * Accepts:
+             * +919876543210
+             * +14155552671
+             * +447911123456
+             * +971501234567
+             *
+             * Allows optional + at the beginning
+             * and 7-15 digits in total.
+             */
+            const phonePattern = /^\+?[1-9]\d{6,14}$/;
+
+            if (!phonePattern.test(phone)) {
+
+                error.textContent =
+                    "Please enter a valid international phone number.";
+
+                phoneInput.focus();
+
+                return false;
+            }
+
+
+            // Get old phone number
+            const oldPhone =
+                document.getElementById("OldPhone").value.trim();
+
+
+            /*
+             * Normalize both numbers before comparing.
+             *
+             * This removes:
+             * +
+             * spaces
+             * -
+             * brackets
+             *
+             * Example:
+             *
+             * +91 9876543210
+             * +919876543210
+             *
+             * are treated as the same number.
+             */
+            const normalizedPhone =
+                phone.replace(/\D/g, "");
+
+            const normalizedOldPhone =
+                oldPhone.replace(/\D/g, "");
+
+
+            // Don't allow same phone number
+            if (normalizedPhone === normalizedOldPhone) {
+
+                error.textContent =
+                    "New phone number must be different from your current phone number.";
+
+                phoneInput.focus();
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /*
+         * Allow only:
+         * numbers
+         * +
+         * spaces
+         * -
+         * (
+         * )
+         *
+         * while typing.
+         */
+        document
+            .getElementById("NewPhone")
+            .addEventListener("input", function () {
+
+                this.value = this.value.replace(
+                    /[^0-9+()\-\s]/g,
+                    ""
+                );
+
+                const error =
+                    document.getElementById("phoneError");
+
+                error.textContent = "";
+            });
+
+    </script>
+
+</body>
+
+</html>

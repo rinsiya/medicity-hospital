@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"medicity/database"
+	//"medicity/internal/dto"
 	"medicity/internal/models"
 	"time"
 
@@ -17,72 +18,50 @@ type PatientRepository interface {
 	PhoneExists(phone string) (bool, error)
 	IsProfileComplete(patientID uint) (bool, error)
 	GetPatientByID(PatientID,UserID uint)(*models.Patient, error)
-	CompleteProfileRequest(patientID uint, userID uint, dob time.Time, gender string, weight *float64, height *float64, fileRecord *models.File) error
-}
+	CompleteProfileRequest(patientID uint,userID uint,dob time.Time,gender string,weight *float64,height *float64) error}
 
 type patientRepository struct{}
 
 func NewPatientRepository() PatientRepository {
 	return &patientRepository{}
 }
+// func (r *patientRepository) GetPatientMiniProfile(userID , patientId uint)(*dto.PatientMiniProfile,error){
 
-func (r *patientRepository) CompleteProfileRequest(patientID uint,userID uint,
-	dob time.Time,
-	gender string,
-	weight *float64,
-	height *float64,
-	fileRecord *models.File,
-) error {
 
-	return database.DB.Transaction(func(tx *gorm.DB) error {
+// }
+func (r *patientRepository) CompleteProfileRequest(patientID uint,userID uint,dob time.Time,gender string,weight *float64,height *float64) error {
 
-		// Store Profile Photo ID
-		var profilePhotoID *uint
+	updates := map[string]interface{}{
+		"dob":    dob,
+		"gender": gender,
+	}
 
-		// Create file record if photo exists
-		if fileRecord != nil {
+	if weight != nil {
+		updates["weight"] = *weight
+	}
 
-			if err := tx.Create(fileRecord).Error; err != nil {
-				return err
-			}
+	if height != nil {
+		updates["height"] = *height
+	}
 
-			profilePhotoID = &fileRecord.FileID
-		}
+	result := database.DB.
+		Model(&models.Patient{}).
+		Where(
+			"patient_id = ? AND user_id = ?",
+			patientID,
+			userID,
+		).
+		Updates(updates)
 
-		// Patient fields to update
-		updates := map[string]interface{}{
-			"dob":    dob,
-			"gender": gender,
-		}
+	if result.Error != nil {
+		return result.Error
+	}
 
-		if weight != nil {
-			updates["weight"] = *weight
-		}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("patient not found")
+	}
 
-		if height != nil {
-			updates["height"] = *height
-		}
-
-		if profilePhotoID != nil {
-			updates["profile_photo_id"] = *profilePhotoID
-		}
-
-		// Update patient
-		result := tx.
-			Model(&models.Patient{}).
-			Where("patient_id = ? AND user_id = ?", patientID, userID).
-			Updates(updates)
-
-		if result.Error != nil {
-			return result.Error
-		}
-
-		if result.RowsAffected == 0 {
-			return fmt.Errorf("patient not found")
-		}
-
-		return nil
-	})
+	return nil
 }
 func (r *patientRepository) EmailExists(email string) (bool, error) {
 	var count int64
@@ -129,12 +108,19 @@ func (r *patientRepository) FindByID(UserId uint) (*models.Patient, error) {
 	}
 	return &patient, nil
 }
+func (r *patientRepository) FindByPatientID(patientId uint) (*models.Patient, error) {
+	var patient models.Patient
+	err := database.DB.Where("patient_id = ?", patientId).First(&patient).Error
+	if err != nil {
+		return nil, err
+	}
+	return &patient, nil
+}
 func (r *patientRepository) GetPatientByID(patientID uint,userID uint) (*models.Patient, error) {
 
 	var patient models.Patient
 
 	err := database.DB.
-		Preload("ProfilePhoto").
 		Where(
 			"patient_id = ? AND user_id = ?",
 			patientID,
@@ -148,7 +134,6 @@ func (r *patientRepository) GetPatientByID(patientID uint,userID uint) (*models.
 
 	return &patient, nil
 }
-
 func (r *patientRepository) IsProfileComplete(patientID uint) (bool, error) {
 
 	var patient models.Patient

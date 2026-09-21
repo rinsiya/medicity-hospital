@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"time"
+	//"time"
 
 	"medicity/internal/dto"
 	"medicity/internal/models"
@@ -11,7 +12,7 @@ import (
 	"medicity/pkg/utils"
 
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
+	//"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -25,12 +26,13 @@ type UserService interface {
 	//ForgotPasswordOTPVerification(phone string) error
 	ResendOTP(phone string) error
 	FindPasswordResetUserByPhone(phone string) (*models.PasswordReset, error)
-	SaveOTPPasswordResetUser(otpHash, phone string) error
-	ValidatePasswordResetOTP(phone string, otp string) (time.Time, error)
-	VerifyPasswordResetOTP(phone string, otp string) (time.Time, error)
+	//SaveOTPPasswordResetUser(otpHash, phone string) error
+	//ValidatePasswordResetOTP(phone string, otp string) (time.Time, error)
+	//VerifyPasswordResetOTP(phone string, otp string) (time.Time, error)
 	UpdatePassword(phone string, role string, newPassword string) error
 	GetPatientIDByUserID(userID uint) uint
 	GetUserByID(userID uint)(*models.User,error)
+	SaveOTPRequest(phone string , sessionID string)error
 }
 
 // signupService := &SignupService{}
@@ -38,15 +40,39 @@ type userService struct {
 	repo              repository.UserRepository
 	passwordResetRepo repository.PasswordResetRepository
 	signupService     SignupService
+	otpService        OTPService
 }
 
-func NewUserService(r repository.UserRepository, signupService SignupService, passwordResetRepo repository.PasswordResetRepository) UserService {
-	return &userService{repo: r, signupService: signupService, passwordResetRepo: passwordResetRepo}
+func NewUserService(r repository.UserRepository, otpService OTPService,signupService SignupService, passwordResetRepo repository.PasswordResetRepository) UserService {
+	return &userService{repo: r, signupService: signupService,
+		 passwordResetRepo: passwordResetRepo,
+		otpService: otpService,
+		}
 }
 
-//	func (s *userService) ForgotPasswordOTPVerification(phone string) error {
-//		return nil
-//	}
+func (s *userService)SaveOTPRequest(phone, sessionID string) error{
+passwordResetUser := &models.PasswordReset{
+Phone: phone,
+SessionID: sessionID,
+OTPExpiresAt: time.Now().Add(2 * time.Minute),
+	}
+	err := s.passwordResetRepo.Update(passwordResetUser)
+	if err != nil {
+		logger.Log.Error(
+			"Failed to save otp to user",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+		return err
+	}
+	logger.Log.Info("Password reset pending OTP verification",
+		zap.String("phone", phone),
+	//zap.String("role", string(passwordResetUser)),
+	)
+
+	return nil
+}
+
 
 func (s  *userService) GetUserByID(userID uint)(*models.User,error){
 
@@ -97,144 +123,26 @@ return nil
 
 }
 
-// func (s *userService) UpdatePassword(phone string, newPassword string) error {}
-func (s *userService) VerifyPasswordResetOTP(phone string, otp string) (time.Time, error) {
-
-	// Find pending user
-	passwordResetUser, err := s.passwordResetRepo.FindByPhone(phone)
-
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	if passwordResetUser == nil {
-		return time.Time{}, errors.New(
-			"password reset user not found",
-		)
-	}
-
-	// Validate OTP
-	otpExpiresAt, err := s.ValidatePasswordResetOTP(phone, otp)
-
-	if err != nil {
-		return otpExpiresAt, err
-	}
-	return otpExpiresAt, nil
-}
-
-func (s *userService) ValidatePasswordResetOTP(phone string, otp string) (time.Time, error) {
-
-	passwordResetUser, err := s.passwordResetRepo.FindByPhone(phone)
-
-	if err != nil {
-		logger.Log.Error(
-			"Failed to find user by phone",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return time.Time{}, err
-	}
-
-	if passwordResetUser == nil {
-		return time.Time{}, errors.New("password reset user not found")
-	}
-
-	// Keep the expiry time so the handler can send it back to UI
-	expiresAt := passwordResetUser.OTPExpiresAt
-
-	// Check expiry
-	if time.Now().After(expiresAt) {
-
-		logger.Log.Warn(
-			"OTP expired",
-			zap.String("phone", phone),
-		)
-
-		return expiresAt, errors.New("OTP expired")
-	}
-
-	// Compare OTP
-	err = bcrypt.CompareHashAndPassword(
-		[]byte(passwordResetUser.OTPHash),
-		[]byte(otp),
-	)
-
-	if err != nil {
-
-		logger.Log.Warn(
-			"Invalid OTP",
-			zap.String("phone", phone),
-		)
-
-		return expiresAt, errors.New("Invalid OTP")
-	}
-	logger.Log.Info(
-		"OTP verified successfully",
-		zap.String("phone", phone),
-	)
-		logger.Log.Info(
-		"deleting entry in password reset table after successful verification",
-		zap.String("phone", phone),
-	)
-		 err = s.passwordResetRepo.Delete(passwordResetUser.PasswordResetID);
-		 if err != nil {
-				logger.Log.Info(
-		"deleting entry in password reset table failed",
-		zap.String("phone", phone),
-	)
-	return expiresAt, errors.New("deleting entry in password reset table failed")
-		 }
-
-	logger.Log.Info(
-		"deleted entry in password reset table",
-		zap.String("phone", phone),
-	)
-
-	return expiresAt, nil
-}
-
-func (s *userService) SaveOTPPasswordResetUser(otpHash, phone string) error {
-	passwordResetUser, err := s.passwordResetRepo.FindByPhone(phone)
-
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to find user by phone",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return err
-	}
-	passwordResetUser.OTPHash = otpHash
-	passwordResetUser.OTPExpiresAt = time.Now().Add(2 * time.Minute)
-	logger.Log.Info("Password reset update otp hash and expiry",
-		zap.String("phone", phone))
-	err = s.passwordResetRepo.Update(passwordResetUser)
-	if err != nil {
-		logger.Log.Error(
-			"Failed to save otp to user",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-		return err
-	}
-	logger.Log.Info("Password reset pending OTP verification",
-		zap.String("phone", phone),
-	//zap.String("role", string(passwordResetUser)),
-	)
-
-	return nil
-
-}
-
 func (s *userService) ResendOTP(phone string) error {
-	otpHash, err := s.signupService.GenerateAndSendOTP(phone)
-	s.SaveOTPPasswordResetUser(otpHash, phone)
+	sessionID, err := s.otpService.SendOTP(phone)
 	if err != nil {
+		logger.Log.Error(
+			"Failed to resend OTP",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
 		return err
 	}
+
+	if err := s.SaveOTPRequest(phone, sessionID); err != nil {
+		logger.Log.Error(
+			"Failed to save resent OTP session",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+		return err
+	}
+
 	logger.Log.Info(
 		"OTP resent successfully",
 		zap.String("phone", phone),
@@ -282,41 +190,7 @@ func (s *userService) UserExistByPhoneAndRole(phone, role string) error {
 
 	logger.Log.Info("Forgot password request processed",
 		zap.String("phone", phone),
-		//zap.String("role", role),
-	)
-
-	otpHash, err := s.signupService.GenerateAndSendOTP(phone)
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to create password reset OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return err
-	}
-	passwordResetUser := &models.PasswordReset{
-		Phone:        phone,
-		OTPHash:      otpHash,
-		OTPExpiresAt: time.Now().Add(2 * time.Minute),
-		Verified:     false,
-	}
-
-	err = s.passwordResetRepo.Create(passwordResetUser)
-	if err != nil {
-		logger.Log.Error(
-			"Failed to create password reset record",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		return err
-	}
-
-	logger.Log.Info(
-		"password reset OTP created successfully",
-		zap.String("phone", phone),
+		zap.String("role", role),
 	)
 
 	return nil

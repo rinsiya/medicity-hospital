@@ -17,11 +17,17 @@ import (
 
 type UserHandler struct {
 	Service service.UserService
+	otpService service.OTPService
+	doctorService service.DoctorService
 }
 
-func NewUserHandler(service service.UserService) *UserHandler {
+func NewUserHandler(service service.UserService,otpService service.OTPService, 
+	doctorService service.DoctorService,
+	) *UserHandler {
 	return &UserHandler{
 		Service: service,
+		otpService: otpService,
+		doctorService:doctorService,
 	}
 }
 
@@ -49,6 +55,115 @@ func (h *UserHandler) ForgotPasswordForm(c *gin.Context) {
 	c.HTML(http.StatusOK, "forgot-password.html", gin.H{
 		"role": c.Param("role"),
 	})
+}
+
+
+func (h *UserHandler) SendForgotPasswordOTP(c *gin.Context) {
+
+role := c.Param("role")
+
+	switch role {
+	case "patient", "doctor", "admin":
+		// valid role
+	default:
+		c.HTML(http.StatusBadRequest, "forgot-password.html", gin.H{
+			"error": "Invalid user",
+			"role":  role,
+		})
+		return
+	}
+	input := dto.ForgotPasswordPhone{}
+	if err := c.ShouldBind(&input); err != nil {
+		logger.Log.Error("Validation error", zap.Error(err))
+
+		c.HTML(http.StatusBadRequest, "forgot-password.html", gin.H{
+			"error": "Invalid phone number",
+			"role":  role,
+		})
+		return
+	}
+
+	err := h.Service.UserExistByPhoneAndRole(input.Phone, role)
+
+if errors.Is(err, service.ErrUserNotFound) {
+
+    logger.Log.Warn("User not found", zap.String("phone", input.Phone))
+
+    c.JSON(http.StatusNotFound, gin.H{
+        "success": false,
+        "message": "User not found, please check your phone number.",
+    })
+    return
+}
+
+	if errors.Is(err, service.ErrFailedPasswordReset) {
+
+		logger.Log.Error("Forgot password verification failed", zap.Error(err))
+		c.HTML(http.StatusUnauthorized, "forgot-password.html", gin.H{
+			"error": "Forgot password verification failed, try again later",
+			"role":  role,
+		})
+		return
+	}
+
+	if err != nil {
+		logger.Log.Error("Forgot password verification failed", zap.Error(err))
+		c.HTML(http.StatusUnauthorized, "forgot-password.html", gin.H{
+			"role":  role,
+			"error": "Forgot password verification failed, try again later",
+		})
+		return
+
+
+	}
+	logger.Log.Info("Start session with reset password phone as session variable", zap.String("phone", input.Phone))
+	session := sessions.Default(c)
+	session.Set("reset_phone", input.Phone)
+	session.Set("reset_role", role)
+
+	if err := session.Save(); err != nil {
+		logger.Log.Error("Failed to save reset phone to session", zap.Error(err))
+
+		c.HTML(http.StatusInternalServerError, "forgot-password.html", gin.H{
+			"role": role,
+
+			"error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+
+    sessionID, err := h.otpService.SendOTP(input.Phone)
+
+    if err != nil {
+		
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "success": false,
+            "message": "Failed to send OTP",
+        })
+        return
+		
+    }
+
+    // Save sessionID temporarily
+    err = h.Service.SaveOTPRequest(input.Phone,sessionID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "success": false,
+            "message": "Failed to save OTP",
+        })
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "success": true,
+        "message": "OTP sent successfully",
+		"redirect":"/"+role+"/forgot-password/otp-verification",
+    })
+
+//c.Redirect(http.StatusSeeOther, "/"+role+"/forgot-password/otp-verification")
+
 }
 
 func (h *UserHandler) UpdateForgotPassword(c *gin.Context) {
@@ -135,11 +250,12 @@ otp := c.PostForm("otp1") +
 			"error": "Please enter a valid 6-digit OTP",
 		})
 
-		return
+		return     
 	}
+		passwordResetUser, err := h.Service.FindPasswordResetUserByPhone(phone)
 
 	// Verify OTP and create user
-	otpExpiresAt, err := h.Service.VerifyPasswordResetOTP(phone, otp)
+	otpExpiresAt, err := h.otpService.VerifyOTP(passwordResetUser.SessionID,otp,passwordResetUser.OTPExpiresAt)
 
 	if err != nil {
 
@@ -176,6 +292,7 @@ otp := c.PostForm("otp1") +
 		})
 	
 }
+
 func (h *UserHandler) ForgotPasswordOTPVerification(c *gin.Context) {
 	session := sessions.Default(c)
 	phoneValue := session.Get("reset_phone")
@@ -220,6 +337,7 @@ func (h *UserHandler) ForgotPasswordOTPVerification(c *gin.Context) {
 		"load OTP verification page",
 		zap.String("role", role),
 		zap.String("phone", phone),
+		zap.String("timer",passwordResetUser.OTPExpiresAt.String()),
 	)
 
 	c.HTML(http.StatusOK, "change-password-verification.html", gin.H{
@@ -228,80 +346,6 @@ func (h *UserHandler) ForgotPasswordOTPVerification(c *gin.Context) {
 		"otpExpiresAt": passwordResetUser.OTPExpiresAt.UnixMilli(),
 
 	})
-
-}
-func (h *UserHandler) ForgotPasswordPhoneVerification(c *gin.Context) {
-	role := c.Param("role")
-
-	switch role {
-	case "patient", "doctor", "admin":
-		// valid role
-	default:
-		c.HTML(http.StatusBadRequest, "forgot-password.html", gin.H{
-			"error": "Invalid user",
-			"role":  role,
-		})
-		return
-	}
-	input := dto.ForgotPasswordPhone{}
-	if err := c.ShouldBind(&input); err != nil {
-		logger.Log.Error("Validation error", zap.Error(err))
-
-		c.HTML(http.StatusBadRequest, "forgot-password.html", gin.H{
-			"error": "Invalid phone number",
-			"role":  role,
-		})
-		return
-	}
-
-	err := h.Service.UserExistByPhoneAndRole(input.Phone, role)
-
-	if errors.Is(err, service.ErrUserNotFound) {
-
-		logger.Log.Error("User not found", zap.Error(err))
-
-		c.HTML(http.StatusNotFound, "forgot-password.html", gin.H{
-			"error": "User not found",
-			"role":  role,
-		})
-		return
-	}
-
-	if errors.Is(err, service.ErrFailedPasswordReset) {
-
-		logger.Log.Error("Forgot password verification failed", zap.Error(err))
-		c.HTML(http.StatusUnauthorized, "forgot-password.html", gin.H{
-			"error": "Forgot password verification failed, try again later",
-			"role":  role,
-		})
-		return
-	}
-
-	if err != nil {
-		logger.Log.Error("Forgot password verification failed", zap.Error(err))
-		c.HTML(http.StatusUnauthorized, "forgot-password.html", gin.H{
-			"role":  role,
-			"error": "Forgot password verification failed, try again later",
-		})
-		return
-
-	}
-	logger.Log.Info("Start session with reset password phone as session variable", zap.String("phone", input.Phone))
-	session := sessions.Default(c)
-	session.Set("reset_phone", input.Phone)
-	session.Set("reset_role", role)
-
-	if err := session.Save(); err != nil {
-		logger.Log.Error("Failed to save reset phone to session", zap.Error(err))
-
-		c.HTML(http.StatusInternalServerError, "forgot-password.html", gin.H{
-			"role": role,
-
-			"error": "Something went wrong. Please try again.",
-		})
-		return
-	}
-	c.Redirect(http.StatusSeeOther, "/"+role+"/forgot-password/otp-verification")
 
 }
 
@@ -367,9 +411,9 @@ session := sessions.Default(c)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-
+var doctor *models.Doctor
 	role := c.Param("role")
-
+var role_id uint;
 	switch role {
 	case "patient", "doctor", "admin":
 		// valid role
@@ -402,10 +446,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 		})
 		return
 	}
+if user.Role == "patient"{
+role_id = h.Service.GetPatientIDByUserID(user.UserID)
+}else {
+    doctor = h.doctorService.GetDoctorByUserID(user.UserID)
 
-patient_id := h.Service.GetPatientIDByUserID(user.UserID)
-
-	token, err := utils.GenerateJWT(user.UserID,patient_id, string(user.Role))
+	role_id = doctor.DoctorID
+}
+	token, err := utils.GenerateJWT(user.UserID,role_id, string(user.Role))
 
 	if err != nil {
 		logger.Log.Error("Token generation failed", zap.Error(err))
@@ -436,8 +484,29 @@ patient_id := h.Service.GetPatientIDByUserID(user.UserID)
 		c.Redirect(http.StatusSeeOther, "/patient/home")
 
 	case models.RoleDoctor:
-		c.Redirect(http.StatusSeeOther, "/doctor/dashboard")
 
+    if doctor.DepartmentID == nil {
+        c.Redirect(http.StatusSeeOther, "/doctor/complete-profile")
+        return
+    }
+
+    switch doctor.VerificationStatus {
+
+    case "pending":
+        c.Redirect(http.StatusSeeOther, "/doctor/verification-pending")
+
+    case "rejected":
+        c.Redirect(http.StatusSeeOther, "/doctor/profile-rejected")
+
+    case "approved":
+        c.Redirect(http.StatusSeeOther, "/doctor/dashboard")
+
+    default:
+        c.HTML(http.StatusInternalServerError, "doctorLogin.html", gin.H{
+            "error": "Invalid doctor verification status",
+            "role":  role,
+        })
+    }
 	default:
 		logger.Log.Warn(
 			"Unknown user role",

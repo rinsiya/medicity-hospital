@@ -2,14 +2,12 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"medicity/internal/dto"
+	"medicity/internal/models"
 	"medicity/internal/service"
 	"medicity/logger"
+	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -17,14 +15,19 @@ import (
 
 type patientHandler struct {
 	patientService service.PatientService
-	Service service.UserService
+	Service        service.UserService
+	fileService    service.FileService
 }
 
-func NewPatientHandler(patientService service.PatientService,service service.UserService) *patientHandler {
+func NewPatientHandler(
+	patientService service.PatientService,
+	service service.UserService,
+	fileService service.FileService,
+) *patientHandler {
 	return &patientHandler{
 		patientService: patientService,
-	
-		Service: service,
+		Service:        service,
+		fileService:    fileService,
 	}
 }
 
@@ -45,7 +48,7 @@ func (h *patientHandler) CompleteProfile(c *gin.Context) {
 func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 
 	patientID := c.GetUint("RoleID")
-	userID := c.GetUint("userID")
+	userID := c.GetUint("UserID")
 
 	if patientID == 0 || userID == 0 {
 		logger.Log.Error(
@@ -54,6 +57,7 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 			zap.Uint("patientID", patientID),
 			zap.Uint("userID", userID),
 		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "Unauthorized",
@@ -69,12 +73,6 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 
 	// Validate required fields
 	if dob == "" {
-		logger.Log.Error(
-			"Date of birth is required",
-			zap.String("role", "patient"),
-			zap.Uint("patientID", patientID),
-			zap.Uint("userID", userID),
-		)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Date of birth is required",
@@ -83,12 +81,6 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 	}
 
 	if gender == "" {
-		logger.Log.Error(
-			"Gender is required",
-			zap.String("role", "patient"),
-			zap.Uint("patientID", patientID),
-			zap.Uint("userID", userID),
-		)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Gender is required",
@@ -96,64 +88,40 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 		return
 	}
 
-	// Profile photo information
-	var photoPath string
-	var fileName string
-	var fileType string
 
-	// Get uploaded photo
-	file, err := c.FormFile("photo")
+	var photoFile multipart.File
+	var photoHeader *multipart.FileHeader
+
+	file, header, err := c.Request.FormFile("photo")
 
 	if err == nil {
+		photoFile = file
+		photoHeader = header
 
-		// Validate file type
-		fileType = file.Header.Get("Content-Type")
+		defer photoFile.Close()
+	} else if !errors.Is(err, http.ErrMissingFile) {
+		logger.Log.Error(
+			"Failed to read profile photo",
+			zap.Uint("patientID", patientID),
+			zap.Error(err),
+		)
 
-		if fileType != "image/jpeg" &&
-			fileType != "image/png" &&
-			fileType != "image/webp" {
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"message": "Only JPG, PNG and WEBP images are allowed",
-			})
-			return
-		}
-
-		// Get file extension
-		extension := filepath.Ext(file.Filename)
-
-		// Generate unique filename
-		fileName = fmt.Sprintf("patient_%d_%d%s", patientID, time.Now().UnixNano(), extension)
-
-		photoPath = filepath.Join("uploads", "patients", fileName)
-
-		// Create upload directory
-		err = os.MkdirAll(filepath.Dir(photoPath), 0755)
-
-		if err != nil {
-
-			logger.Log.Error(
-				"Failed to create upload directory",
-				zap.String("role", "patient"),
-				zap.Uint("patientID", patientID),
-				zap.String("photoPath", photoPath),
-				zap.Error(err),
-			)
-
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"success": false,
-				"message": "Failed to create upload directory",
-			})
-			return
-		}
-
-		// Save physical file
-
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Failed to read profile photo",
+		})
+		return
 	}
 
-	// Call service
-	err = h.patientService.CompleteProfileRequest(patientID, userID, dob, gender, weight, height, photoPath, fileName, fileType)
+
+	err = h.patientService.CompleteProfileRequest(
+		patientID,
+		userID,
+		dob,
+		gender,
+		weight,
+		height,
+	)
 
 	if err != nil {
 
@@ -172,30 +140,50 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 		return
 	}
 
+	
+	// Upload profile photo to Cloudinary if provided
+
+	if photoFile != nil {
+
+		_, err := h.fileService.UploadFile(
+			c.Request.Context(),
+			userID,
+			models.FileCategoryProfilePhoto,
+			photoFile,
+			photoHeader,
+		)
+
+		if err != nil {
+
+			logger.Log.Error(
+				"Failed to upload profile photo to Cloudinary",
+				zap.String("role", "patient"),
+				zap.Uint("patientID", patientID),
+				zap.Uint("userID", userID),
+				zap.Error(err),
+			)
+
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": "Profile completed, but failed to upload profile photo",
+			})
+			return
+		}
+
+		logger.Log.Info(
+			"Profile photo uploaded successfully",
+			zap.String("role", "patient"),
+			zap.Uint("patientID", patientID),
+			zap.Uint("userID", userID),
+		)
+	}
+
 	logger.Log.Info(
 		"Patient profile completed successfully",
 		zap.String("role", "patient"),
 		zap.Uint("patientID", patientID),
 		zap.Uint("userID", userID),
 	)
-	err = c.SaveUploadedFile(file, photoPath)
-
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to save profile photo",
-			zap.String("role", "patient"),
-			zap.Uint("patientID", patientID),
-			zap.String("photoPath", photoPath),
-			zap.Error(err),
-		)
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Failed to save profile photo",
-		})
-		return
-	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
@@ -272,7 +260,35 @@ if err != nil {
 	})
 }
 
+// func (h *patientHandler) GetMiniProfile(c *gin.Context) {
 
+//     userIDValue, userExists := c.Get("userID")
+//     patientIDValue, exists := c.Get("roleID")
+//     if !exists || !userExists {
+//         c.JSON(http.StatusUnauthorized, gin.H{
+//             "success": false,
+//             "message": "User not authenticated",
+//         })
+//         return
+//     }
+
+//     userID := userIDValue.(uint)
+//     patientID := patientIDValue.(uint)
+
+//     patient, err := h.patientService.GetPatientMiniProfile(userID,patientID)
+//     if err != nil {
+//         c.JSON(http.StatusInternalServerError, gin.H{
+//             "success": false,
+//             "message": "Failed to load patient profile",
+//         })
+//         return
+//     }
+
+//     c.JSON(http.StatusOK, gin.H{
+//         "success": true,
+//         "patient": patient,
+//     })
+// }
 // logout function to clear the JWT cookie and redirect to login page
 func (h *patientHandler) Logout(c *gin.Context) {
 	// Clear the JWT cookie

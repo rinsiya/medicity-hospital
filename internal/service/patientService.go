@@ -1,8 +1,8 @@
 package service
 
 import (
-	//"errors"
 	"fmt"
+	"medicity/internal/dto"
 	"medicity/internal/models"
 	"medicity/internal/repository"
 	"strconv"
@@ -11,27 +11,38 @@ import (
 )
 
 type PatientService interface {
-	GetPatientByID(patientID,userID uint) (*models.Patient, error)
+	GetPatientByID(patientID, userID uint) (*dto.PatientProfile, error)
 	IsProfileComplete(patientID uint) (bool, error)
-	CompleteProfileRequest(patientID uint,userID uint, dob string, gender string, weight string, height string,photoPath string,fileName string,fileType string) error
+	FindByID(patientID uint) (*models.Patient, error)
+
+	CompleteProfileRequest(patientID uint,userID uint,dob string,gender string,weight string,height string) error
 }
 
 type patientService struct {
-	patientRepo        repository.PatientRepository
+	patientRepo repository.PatientRepository
+	fileRepo repository.FileRepository
 }
 
-func NewPatientService(patientRepo repository.PatientRepository) PatientService {
+func NewPatientService(patientRepo repository.PatientRepository,
+	fileRepo repository.FileRepository,
+	) PatientService {
 	return &patientService{
 		patientRepo: patientRepo,
+		fileRepo: fileRepo,
 	}
-
 }
 
-func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob string,gender string,weight string,height string,photoPath string,fileName string,fileType string) error {
+func (s *patientService) CompleteProfileRequest(
+	patientID uint,
+	userID uint,
+	dob string,
+	gender string,
+	weight string,
+	height string,
+) error {
 
 	// Parse date of birth
 	dateOfBirth, err := time.Parse("2006-01-02", dob)
-
 	if err != nil {
 		return fmt.Errorf("invalid date of birth")
 	}
@@ -42,7 +53,6 @@ func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob 
 	if !strings.EqualFold(gender, "Male") &&
 		!strings.EqualFold(gender, "Female") &&
 		!strings.EqualFold(gender, "Other") {
-
 		return fmt.Errorf("invalid gender")
 	}
 
@@ -50,9 +60,7 @@ func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob 
 	var patientWeight *float64
 
 	if weight != "" {
-
 		value, err := strconv.ParseFloat(weight, 64)
-
 		if err != nil {
 			return fmt.Errorf("invalid weight")
 		}
@@ -68,9 +76,7 @@ func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob 
 	var patientHeight *float64
 
 	if height != "" {
-
 		value, err := strconv.ParseFloat(height, 64)
-
 		if err != nil {
 			return fmt.Errorf("invalid height")
 		}
@@ -82,22 +88,8 @@ func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob 
 		patientHeight = &value
 	}
 
-	// Create file record only when photo is uploaded
-	var fileRecord *models.File
-
-	if photoPath != "" {
-
-		fileRecord = &models.File{
-			UserID:      userID,
-			Category:    models.FileCategory("profile_photo"),
-			StoragePath: photoPath,
-			FileName:    fileName,
-			FileType:    fileType,
-			Remarks:     "Patient profile photo",
-		}
-	}
-
-	// Save patient profile and file information
+	// Save patient profile.
+	// Profile photo is handled by FileService.
 	return s.patientRepo.CompleteProfileRequest(
 		patientID,
 		userID,
@@ -105,16 +97,41 @@ func (s *patientService) CompleteProfileRequest(patientID uint,userID uint,	dob 
 		gender,
 		patientWeight,
 		patientHeight,
-		fileRecord,
 	)
 }
+
 func (s *patientService) IsProfileComplete(patientID uint) (bool, error) {
 	return s.patientRepo.IsProfileComplete(patientID)
 }
-func (s *patientService) GetPatientByID(patientID ,userID uint) (*models.Patient, error) {
-	patient, err := s.patientRepo.GetPatientByID(patientID,userID)
+
+func (s *patientService) GetPatientByID(patientID, userID uint) (*dto.PatientProfile, error) {
+	patient, err := s.patientRepo.GetPatientByID(patientID, userID)
 	if err != nil {
 		return nil, err
 	}
+	profile := &dto.PatientProfile{
+		PatientName: patient.FirstName + " " + patient.LastName,
+		Gender:      patient.Gender,
+		DOB:         patient.DOB,
+		Height:      patient.Height,
+		Weight:      patient.Weight,
+		ProfilePhoto: "",
+	}
+	file, err := s.fileRepo.GetProfilePhotoByUserID(userID)
+
+	if err == nil && file != nil {
+		profile.ProfilePhoto = file.SecureURL
+	}
+
+	return profile, nil
+	
+}
+
+func (s *patientService) FindByID(patientID uint) (*models.Patient, error) {
+	patient, err := s.patientRepo.FindByID(patientID)
+	if err != nil {
+		return nil, err
+	}
+
 	return patient, nil
 }

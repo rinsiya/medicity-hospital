@@ -12,9 +12,6 @@
         }
 
 
-        /* ==========================================
-   SAVED VITAL DATA
-========================================== */
 
         .vital-data-card {
             padding: 12px;
@@ -73,9 +70,6 @@
         }
 
 
-        /* ==========================================
-   ADD VITAL AREA
-========================================== */
 
         .add-vital-area {
             display: grid;
@@ -84,9 +78,7 @@
         }
 
 
-        /* ==========================================
-   FORM
-========================================== */
+
 
         .add-vital {
             padding: 12px;
@@ -125,10 +117,6 @@
         }
 
 
-        /* ==========================================
-   NEW VITAL DATA
-========================================== */
-
         .entered-vitals {
             padding: 12px;
             min-height: 150px;
@@ -151,9 +139,7 @@
         }
 
 
-        /* ==========================================
-   NEW VITAL ITEM
-========================================== */
+
 
         .new-vital-item {
             display: grid;
@@ -219,9 +205,6 @@
         }
 
 
-        /* ==========================================
-   SAVE BUTTON
-========================================== */
 
         .save-vitals-container {
             display: flex;
@@ -263,9 +246,6 @@
         }
 
 
-        /* ==========================================
-   RESPONSIVE
-========================================== */
 
         @media (max-width: 600px) {
 
@@ -294,8 +274,8 @@
 
     <header class="top-header">
         <div class="utility-bar">
-            <a href="#">Feedback</a>
-            <a href="#">Search</a>
+            
+            <a href="/search">Search</a>
             <form action="/patient/logout" method="POST">
                 <button class="sign-out">Sign out</button>
             </form>
@@ -337,9 +317,6 @@
                     </div>
 
 
-                    <!-- ==========================================
-         SAVED VITAL DATA
-    =========================================== -->
 
                     <div class="vital-data-card card">
 
@@ -373,10 +350,6 @@
 
                     </div>
 
-
-                    <!-- ==========================================
-         ADD NEW VITAL
-    =========================================== -->
 
                     <div class="add-vital-area">
 
@@ -469,9 +442,6 @@
                     </div>
 
 
-                    <!-- ==========================================
-         SAVE ALL
-    =========================================== -->
 
                     <div class="save-vitals-container">
 
@@ -486,7 +456,10 @@
                 <section class="section">
                     <div class="section-heading">
                         <h2>▣&nbsp; Recent Appointments</h2>
-                        <a href="#">View All</a>
+
+                        <a href="/patient/appointments" class="view-all">
+                            View All
+                        </a>
                     </div>
 
                     <div class="table-wrap card">
@@ -514,28 +487,63 @@
                     <section class="section">
                         <div class="section-heading">
                             <h2>▣&nbsp; Medical Reports</h2>
-                            <a href="#">View All</a>
+                            <a href="/patient/files">View All</a>
                         </div>
 
-                        <div class="reports card" id="medical-reports">
+<div class="reports card" id="medical-reports">
 
-                            <div class="drop-zone">
-                                <div class="upload-icon">⇧</div>
-                                <b>Drop files here or browse</b>
-                                <span>Supports Lab Reports, X-Ray, ECGs (Max 10MB)</span>
-                            </div>
+    <form
+        action="/patient/upload-file"
+        method="POST"
+        enctype="multipart/form-data"
+        id="medicalReportForm"
+    >
 
-                            <div id="medical-reports-list">
-                                <p>Loading medical reports...</p>
-                            </div>
+        <input
+            type="hidden"
+            name="category"
+            value="medical_report"
+        >
 
-                        </div>
+        <input
+            type="file"
+            name="file"
+            id="medicalReportFile"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            hidden
+            required
+        >
+
+        <label for="medicalReportFile" class="drop-zone">
+
+            <div class="upload-icon">⇧</div>
+
+            <strong>Upload Medical Report</strong>
+
+            <span>
+                Supports Lab Reports, X-Ray, ECGs
+                (Max 10MB)
+            </span>
+
+        </label>
+
+        <button type="submit" class="green-btn">
+            Upload
+        </button>
+
+    </form>
+
+    <div id="medical-reports-list">
+        <p>Loading medical reports...</p>
+    </div>
+
+</div>
                     </section>
 
                     <section class="section">
                         <div class="section-heading">
                             <h2>▣&nbsp; Prescription History</h2>
-                            <a href="#">View All</a>
+                            <a href="/patient/prescriptions">View All</a>
                         </div>
 
                         <div class="prescriptions card">
@@ -585,16 +593,19 @@
                     <p>✉ <span>{{ .user.Email }}</span> <b>●</b></p>
                     <p>☏ <span>{{ .user.Phone }}</span> <b>●</b></p>
                 </div>
-
                 <div class="address-card">
                     <h3>Address</h3>
                     <small>PRESTIGE OCEAN APARTMENTS</small>
                     <p>CALICUT<br>INDIA</p>
-                    <button class="green-btn">＋ Edit address</button>
+
+                    <a href="/completeAddress.html" class="green-btn">
+                        ＋ Edit address
+                    </a>
                 </div>
 
-               <!-- <button class="add-address">＋ Add your address</button>
-          -->  </aside>
+                <!-- <button class="add-address">＋ Add your address</button>
+          -->
+            </aside>
         </section>
     </main>
 
@@ -805,13 +816,10 @@
 
             try {
 
-                const response = await fetch(
-                    "/patient/medical-reports/recent",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
+                const response = await fetch("/patient/files/recent", {
+    method: "GET",
+    credentials: "include"
+});
 
                 if (response.status === 401) {
 

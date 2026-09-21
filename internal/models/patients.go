@@ -19,11 +19,7 @@ type Patient struct {
 
 	Weight float32 `gorm:"type:float;"`
 
-	ProfilePhotoID *uint
-
-	ProfilePhoto *File `gorm:"foreignKey:ProfilePhotoID;references:FileID"`
-
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+    CreatedAt time.Time `gorm:"autoCreateTime"`
 
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }

@@ -16,14 +16,18 @@ import (
 
 type SignupHandler struct {
 	signupService service.SignupService
+	otpService service.OTPService
 }
 
-func NewSignupHandler(signupService service.SignupService) *SignupHandler {
+func NewSignupHandler(
+	signupService service.SignupService,
+	otpService service.OTPService,
+) *SignupHandler {
 	return &SignupHandler{
 		signupService: signupService,
+		otpService:    otpService,
 	}
 }
-
 func (h *SignupHandler) Signup(c *gin.Context) {
 
 	var input dto.SignupInput
@@ -94,26 +98,25 @@ func (h *SignupHandler) Signup(c *gin.Context) {
 			c.HTML(http.StatusConflict, string(role)+"Signup.html", gin.H{
 				"error": "Email and phone already registered. Try to login",
 			})
-
+return
 		case errors.Is(err, service.ErrEmailOrPhoneAlreadyExists):
 
 			c.HTML(http.StatusConflict, string(role)+"Signup.html", gin.H{
 				"error": "Email or Phone number already registered. try again",
 			})
-
+return
 		case errors.Is(err, service.ErrPhonePendingVerification):
-
-			c.Redirect(
-				http.StatusSeeOther,
-				"/"+string(role)+"/verify-otp-pending?phone="+
-					url.QueryEscape(phone),
-			)
+//user already ergistered but verification pending
+logger.Log.Info("pending user to verify")
+			
+	c.Redirect(http.StatusSeeOther, "/"+string(role)+"/verify-otp?phone="+url.QueryEscape(phone))
+return
 		case errors.Is(err, service.ErrEmailAndPhoneMismatch):
 
 			c.HTML(http.StatusConflict, string(role)+"Signup.html", gin.H{
 				"error": "Email or Phone already registered. try again",
 			})
-
+return
 		default:
 
 			logger.Log.Error(
@@ -126,14 +129,12 @@ func (h *SignupHandler) Signup(c *gin.Context) {
 			c.HTML(http.StatusOK, string(role)+"Signup.html", gin.H{
 				"error": err,
 			})
-
+return
 		}
-
-		return
 	}
 
 	logger.Log.Info(
-		"Signup successful",
+		"Signup successful. phone number verification required",
 		zap.String("role", string(role)),
 		zap.String("email", input.Email),
 	)
@@ -153,130 +154,38 @@ func (h *SignupHandler) ShowOTPPage(c *gin.Context) {
 	)
 
 	// Find pending signup
-	pendingUser, err := h.signupService.FindPendingUserByPhone(phone)
 
-	if err != nil {
+pendingUser, err := h.signupService.FindPendingUserByPhone(phone)
 
-		logger.Log.Error(
-			"Failed to find pending user",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
+if err != nil || pendingUser == nil {
+	logger.Log.Error(
+		"Pending user not found",
+		zap.String("phone", phone),
+		zap.Error(err),
+	)
 
-		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
-			"phone": phone,
-			"role":  role,
-			"error": "Unable to load OTP verification page.",
-		})
+	c.HTML(http.StatusBadRequest, "verify-otp.html", gin.H{
+		"phone": phone,
+		"role":  role,
+		"error": "Signup session not found. Please signup again.",
+	})
 
-		return
-	}
-
-	// if pendingUser == nil {
-
-	// 	c.HTML(http.StatusNotFound, "verify-otp.html", gin.H{
-	// 		"phone": phone,
-	// 		"role":  role,
-	// 		"error": "OTP verification session not found. try again",
-	// 	})
-
-	// 	return
-	// }
+	return
+}
+		
 	logger.Log.Info(
 		"load OTP verification page",
 		zap.String("role", role),
 		zap.String("phone", phone),
 	)
-	c.HTML(http.StatusSeeOther, "verify-otp.html", gin.H{
+	c.HTML(http.StatusOK, "verify-otp.html", gin.H{
 		"role":         role,
 		"phone":        phone,
 		"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
 	})
 }
 
-func (h *SignupHandler) ShowOTPPendingPage(c *gin.Context) {
 
-	phone := c.Query("phone")
-	role := c.Param("role")
-
-	logger.Log.Info(
-		"Pending OTP verification page requested",
-		zap.String("role", role),
-		zap.String("phone", phone),
-	)
-
-	// Generate a new OTP
-	otpHash,err := h.signupService.GenerateAndSendOTP(phone)
-
-	if err != nil {
-
-		logger.Log.Error(
-			"Failed to send OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
-			"phone":   phone,
-			"role":    role,
-			"error":   "Unable to send OTP. Please try again.",
-			"success": false,
-			//"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
-
-		})
-
-		return
-	}else{
-	err := h.signupService.SaveOTPPendingUser(otpHash,phone)
-if err!=nil{
-			logger.Log.Error(
-			"Failed to save OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
-			"phone":   phone,
-			"role":    role,
-			"error":   "Unable to send OTP. Please try again.",
-			"success": false,
-			//"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
-
-		})
-
-		return
-
-}
-	}
-
-	// Get updated pending user
-	pendingUser, err := h.signupService.FindPendingUserByPhone(phone)
-
-	if err != nil || pendingUser == nil {
-
-		logger.Log.Error(
-			"Failed to get OTP expiry after generating OTP",
-			zap.String("phone", phone),
-			zap.Error(err),
-		)
-
-		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
-			"phone":        phone,
-			"role":         role,
-			"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
-
-			"error": "Unable to load OTP verification page.",
-		})
-
-		return
-	}
-
-	c.HTML(http.StatusSeeOther, "verify-otp.html", gin.H{
-		"role":         role,
-		"phone":        phone,
-		"otpExpiresAt": pendingUser.OTPExpiresAt.UnixMilli(),
-	})
-}
 
 func (h *SignupHandler) ResendOTP(c *gin.Context) {
 
@@ -317,7 +226,7 @@ func (h *SignupHandler) ResendOTP(c *gin.Context) {
 		)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get OTP expiry",
+			"error": "Failed",
 		})
 
 		return
@@ -332,7 +241,7 @@ func (h *SignupHandler) ResendOTP(c *gin.Context) {
 
 func (h *SignupHandler) PatientVerificationSuccess(c *gin.Context) {
 
-	c.HTML(http.StatusSeeOther, "patientVerificationSuccess.html", gin.H{
+	c.HTML(http.StatusOK, "patientVerificationSuccess.html", gin.H{
 		"message": "Your phone number has been verified successfully.",
 	},
 	)
@@ -340,7 +249,7 @@ func (h *SignupHandler) PatientVerificationSuccess(c *gin.Context) {
 
 func (h *SignupHandler) DoctorVerificationSuccess(c *gin.Context) {
 
-	c.HTML(http.StatusSeeOther, "doctorVerificationSuccess.html", gin.H{
+	c.HTML(http.StatusOK, "doctorVerificationSuccess.html", gin.H{
 		"message": "Your phone number has been verified successfully.",
 	},
 	)
@@ -348,7 +257,7 @@ func (h *SignupHandler) DoctorVerificationSuccess(c *gin.Context) {
 
 func (h *SignupHandler) ChangePhone(c *gin.Context) {
 	phone := c.Query("phone")
-	c.HTML(http.StatusSeeOther, "change-phone.html", gin.H{
+	c.HTML(http.StatusOK, "change-phone.html", gin.H{
 		"phone": phone,
 	},
 	)
@@ -361,43 +270,48 @@ func (h *SignupHandler) UpdatePhone(c *gin.Context) {
 	newPhone := c.PostForm("NewPhone")
 
 	role, phone, err := h.signupService.UpdatePhone(oldPhone, newPhone)
+if err != nil {
 
-	if err != nil {
-		if phone != "" {
-			c.Redirect(
-				http.StatusSeeOther,
-				"/verify-otp?phone="+url.QueryEscape(phone)+"&error="+url.QueryEscape("Phone number updated. can't send otp.try resend otp"),
-			)
-		}
+    if phone != "" {
+        c.Redirect(
+            http.StatusSeeOther,
+            "/"+string(role)+"/verify-otp?phone="+url.QueryEscape(phone)+
+                "&error="+url.QueryEscape("Phone number updated. can't send OTP. Try resend OTP"),
+        )
+        return
+    }
 
-		// If the new phone already exists
-		if errors.Is(err, service.ErrPhoneAlreadyExists) {
-			c.HTML(http.StatusBadRequest, "change-phone.html", gin.H{
-				"phone": oldPhone,
-				"error": "This phone number is already registered",
-			})
+    if errors.Is(err, service.ErrPhoneAlreadyExists) {
 
-			logger.Log.Error(
-				"Failed to update phone number. number already exist",
-				zap.String("oldPhone", oldPhone),
-				zap.String("newPhone", newPhone),
-				zap.Error(err),
-			)
+        c.HTML(http.StatusBadRequest, "change-phone.html", gin.H{
+            "phone": oldPhone,
+            "error": "This phone number is already registered",
+        })
 
-		}
-		logger.Log.Error(
-			"Failed to update phone number",
-			zap.String("oldPhone", oldPhone),
-			zap.String("newPhone", newPhone),
-			zap.Error(err),
-		)
-		c.Redirect(
-			http.StatusSeeOther,
-			"/"+string(role)+"/change-phone?phone="+url.QueryEscape(oldPhone),
-		)
+        logger.Log.Error(
+            "Failed to update phone number. Number already exists",
+            zap.String("oldPhone", oldPhone),
+            zap.String("newPhone", newPhone),
+            zap.Error(err),
+        )
 
-	}
+        return
+    }
 
+    logger.Log.Error(
+        "Failed to update phone number",
+        zap.String("oldPhone", oldPhone),
+        zap.String("newPhone", newPhone),
+        zap.Error(err),
+    )
+
+    c.Redirect(
+        http.StatusSeeOther,
+        "/"+string(role)+"/change-phone?phone="+url.QueryEscape(oldPhone),
+    )
+
+    return
+}
 	// Phone updated and OTP sent successfully
 	c.Redirect(
 		http.StatusSeeOther,
@@ -429,8 +343,32 @@ func (h *SignupHandler) ValidateOTP(c *gin.Context) {
 		return
 	}
 
-	// Verify OTP and create user
-	otpExpiresAt, err := h.signupService.VerifyOTPAndCreateUser(phone, otp)
+	// Find pending signup
+	pendingUser, err := h.signupService.FindPendingUserByPhone(phone)
+
+	if err != nil || pendingUser == nil {
+
+		logger.Log.Error(
+			"Pending signup not found",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+
+		c.HTML(http.StatusBadRequest, "verify-otp.html", gin.H{
+			"phone": phone,
+			"role":  role,
+			"error": "Signup session not found. Please signup again.",
+		})
+
+		return
+	}
+
+	// Verify OTP
+	otpExpiresAt, err := h.otpService.VerifyOTP(
+		pendingUser.SessionID,
+		otp,
+		pendingUser.OTPExpiresAt,
+	)
 
 	if err != nil {
 
@@ -444,45 +382,55 @@ func (h *SignupHandler) ValidateOTP(c *gin.Context) {
 		data := gin.H{
 			"phone": phone,
 			"role":  role,
-			"error": err.Error(),
+			"error": "OTP verification failed",
 		}
 
-		// Only send expiry timestamp if available
 		if !otpExpiresAt.IsZero() {
 			data["otpExpiresAt"] = otpExpiresAt.UnixMilli()
+			data["error"] = "OTP expired"
 		}
 
 		c.HTML(http.StatusBadRequest, "verify-otp.html", data)
 
 		return
 	}
+
 	// Create actual user
 	user, err := h.signupService.CreateUser(phone)
 
 	if err != nil {
-		c.HTML(http.StatusSeeOther, "verify-otp.html", gin.H{
-			"error": "Error verify otp. Try again",
-		},
-		)
-	}
-	// OTP verified and user created successfully
 
-	logger.Log.Info("Failed to get new OTP expiry",
+		logger.Log.Error(
+			"Failed to create user after OTP verification",
+			zap.String("phone", phone),
+			zap.Error(err),
+		)
+
+		c.HTML(http.StatusInternalServerError, "verify-otp.html", gin.H{
+			"phone": phone,
+			"role":  role,
+			"error": "Unable to complete signup. Please try again.",
+		})
+
+		return
+	}
+
+	logger.Log.Info(
+		"OTP verified successfully. User created",
 		zap.String("phone", user.Phone),
 		zap.String("role", string(user.Role)),
-
-		zap.Error(err),
 	)
+
 	switch user.Role {
 
-	case "patient":
+	case models.RolePatient:
 
 		c.Redirect(
 			http.StatusSeeOther,
 			"/patient/verification-success",
 		)
 
-	case "doctor":
+	case models.RoleDoctor:
 
 		c.Redirect(
 			http.StatusSeeOther,
@@ -496,4 +444,5 @@ func (h *SignupHandler) ValidateOTP(c *gin.Context) {
 			"/"+role+"/verification-success",
 		)
 	}
+
 }

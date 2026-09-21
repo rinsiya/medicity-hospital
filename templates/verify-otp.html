@@ -87,7 +87,7 @@
                     {{.phone}}
                 </p>
 
-                <form method="POST" action="/verify-otp">
+                <form method="POST" action="/{{.role}}/verify-otp">
 
                     <input type="hidden" name="phone" value="{{.phone}}">
                     <div class="otp-container">
@@ -230,9 +230,6 @@
         const countdown = setInterval(updateTimer, 1000);
 
 
-        // =========================
-        // RESEND OTP
-        // =================F========
 
         resendBtn.addEventListener("click", async () => {
 

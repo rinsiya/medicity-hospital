@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCity - Doctor Verification</title>
+    <link rel="stylesheet" href="/static/css/doctor-verification.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <button class="signout-btn" type="button">Sign out</button>
+    </div>
+</header>
+
+<main>
+    <section class="brand">
+        <div class="brand-logo"><span>+</span>MediCity</div>
+    </section>
+
+    <section class="page-container">
+        <div class="page-heading">
+            <h1>Doctor Verification</h1>
+            <p>Complete your professional profile and upload required medical credentials to<br>
+               activate your practitioner dashboard and start accepting appointments.</p>
+        </div>
+
+        <div class="top-grid">
+            <div class="left-column">
+
+                <div class="pending-card">
+                    <div class="shield">♡</div>
+                    <div>
+                        <strong>Access Pending Verification</strong>
+                        <small>Your documents are currently under review by our medical board.</small>
+                    </div>
+                </div>
+
+                <div class="card registration-card">
+                    <h2>Registration Details</h2>
+
+                    <div class="details-grid">
+                        <div>
+                            <label>EMAIL ADDRESS</label>
+                            <span>dr.sterling@gmail.com</span>
+                        </div>
+                        <div>
+                            <label>CONTACT NUMBER</label>
+                            <span>09198123456</span>
+                        </div>
+                        <div>
+                            <label>FULL NAME</label>
+                            <span>Dr. Jonathan Sterling</span>
+                        </div>
+                    </div>
+
+                    <div class="bio-section">
+                        <label>Professional Biography</label>
+                        <small>Write about your career journey. This will be added to your public profile.</small>
+                        <textarea></textarea>
+                    </div>
+
+                    <div class="form-grid">
+                        <div>
+                            <label>DEPARTMENT</label>
+                            <select>
+                                <option>select department</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>PROFESSIONAL ROLE</label>
+                            <input type="text" placeholder="Eg. Senior cardiologist">
+                        </div>
+                        <div>
+                            <label>HOSPITAL ADDRESS</label>
+                            <input type="text" placeholder="Eg: Metro Hospital, Calicut">
+                        </div>
+                        <div>
+                            <label>CHOOSE PROFILE PHOTO</label>
+                            <input type="text" placeholder="Select image">
+                        </div>
+                    </div>
+
+                    <button class="primary-btn update-btn" type="button">Update <span>▷</span></button>
+                </div>
+            </div>
+
+            <aside class="right-column">
+                <div class="card profile-preview">
+                    <div class="preview-header">
+                        <span>PUBLIC PROFILE PREVIEW</span>
+                        <b>INCOMPLETE</b>
+                    </div>
+
+                    <div class="profile-photo">♙</div>
+                    <div class="doctor-name">Dr. Jonathan Sterling</div>
+                    <div class="doctor-role">Senior Cardiologist</div>
+
+                    <div class="progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="progress-label">25% Profile Completion</div>
+                </div>
+
+                <div class="card upload-card">
+                    <h2>Document Upload</h2>
+
+                    <div class="upload-box">
+                        <div class="upload-icon">♙</div>
+                        <strong>Necessary Certificates and<br>proof of experience</strong>
+                        <small>PDF, JPG (Max 5MB)</small>
+                    </div>
+
+                    <label>Remarks</label>
+                    <input type="text">
+
+                    <button class="primary-btn" type="button">Upload <span>▷</span></button>
+                </div>
+            </aside>
+        </div>
+
+        <section class="card qualifications-card">
+            <h2>Manage Qualifications</h2>
+            <p class="section-subtitle">Add and manage your professional medical qualifications.</p>
+
+            <div class="qualification-form">
+                <div>
+                    <label>QUALIFICATION</label>
+                    <select>
+                        <option>Select Qualification</option>
+                    </select>
+                </div>
+                <div>
+                    <label>BRANCH OF STUDY/SPECIALISATION</label>
+                    <input type="text" placeholder="Eg. General Medicine, Cardiology">
+                </div>
+                <div>
+                    <label>UNIVERSITY</label>
+                    <input type="text" placeholder="Name of university">
+                </div>
+                <div>
+                    <label>YEAR OF STUDY</label>
+                    <input type="text" placeholder="Year of study">
+                </div>
+                <button class="small-green-btn" type="button">＋ Add Qualification</button>
+            </div>
+
+            <div class="tag-row">
+                <span class="tag">MBBS in General Medicine <b>×</b></span>
+                <span class="tag">MD in Cardiology <b>×</b></span>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2>Add Experience Here</h2>
+            <p class="section-subtitle">Add and manage your professional experience.</p>
+
+            <div class="experience-years">
+                <label>YEARS OF EXPERIENCE</label>
+                <input type="text" placeholder="e.g. 12">
+            </div>
+
+            <div class="experience-form">
+                <div>
+                    <label>PROFESSIONAL EXPERIENCE: <span>[Add all experience in descending order of time, in the given format]</span></label>
+                    <textarea placeholder="General physician&#10;2018-2020 - ABC Hospital"></textarea>
+                </div>
+                <button class="small-green-btn" type="button">＋ Add Experience</button>
+            </div>
+
+            <div class="experience-tags">
+                <div class="experience-tag">
+                    <strong>Senior Physician</strong>
+                    <span>2020 - Present | ABC Heart Hospital</span>
+                    <b>×</b>
+                </div>
+                <div class="experience-tag">
+                    <strong>General Physician</strong>
+                    <span>2018 - 2020 | City Central Clinic</span>
+                    <b>×</b>
+                </div>
+            </div>
+        </section>
+
+        <section class="card confirmation-card">
+            <h2>Final Confirmation</h2>
+
+            <label class="checkbox-row">
+                <input type="checkbox">
+                <span>All the given proofs and data are true as per my knowledge and medical license.</span>
+            </label>
+
+            <button class="primary-btn submit-btn" type="button">Submit for Verification <span>▷</span></button>
+            <button class="save-btn" type="button">Save Progress</button>
+
+            <div class="confirmation-note">◷ Usually takes 2-3 business days.</div>
+        </section>
+    </section>
+</main>
+
+<footer>
+    © 2026 MediCity Hospital. All Rights Reserved.
+</footer>
+
+</body>
+</html>
