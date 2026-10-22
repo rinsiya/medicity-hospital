@@ -4,8 +4,9 @@ import (
 	"medicity/internal/service"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"medicity/internal/dto"
+
+	"github.com/gin-gonic/gin"
 )
 
 type VitalHandler struct {
@@ -26,11 +27,10 @@ func NewVitalHandler(
 
 func (h *VitalHandler) GetPatientVitals(c *gin.Context) {
 
-	//userIDValue, userExists :=c.Get("userID")
+	//userIDValue, userExists :=c.Get("UserID")
 	PatientID := c.GetUint("RoleID")
 
-
-   vitalData, err :=h.vitalService.GetPatientVitals(PatientID)
+	vitalData, err := h.vitalService.GetPatientVitals(PatientID)
 
 	if err != nil {
 
@@ -55,7 +55,7 @@ func (h *VitalHandler) GetPatientVitals(c *gin.Context) {
 }
 func (h *VitalHandler) SavePatientVitals(c *gin.Context) {
 
-	PatientID:= c.GetUint("RoleID")
+	PatientID := c.GetUint("RoleID")
 	var request dto.SavePatientVitalsRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {

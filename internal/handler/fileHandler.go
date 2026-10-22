@@ -115,7 +115,7 @@ func isValidCategory(category models.FileCategory) bool {
 		models.FileCategoryMedicalReport,
 		models.FileCategoryDoctorCertificate,
 		models.FileCategoryIdentityProof,
-		models.FileCategoryOther:
+		models.FileCategoryExperienceProof:
 
 		return true
 
@@ -198,7 +198,7 @@ func validateFile(
 			)
 		}
 
-	case models.FileCategoryOther:
+	case models.FileCategoryExperienceProof:
 
 		allowedTypes := map[string]bool{
 			"image/jpeg":      true,

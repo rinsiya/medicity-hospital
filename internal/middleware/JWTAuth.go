@@ -46,7 +46,7 @@ func JWTAuth(role string) gin.HandlerFunc {
         }
 
         // JWT is valid, so now extract the values
-        c.Set("userID", claims.UserID)
+        c.Set("UserID", claims.UserID)
         c.Set("RoleID", claims.RoleID)
         c.Set("role", claims.Role)
 

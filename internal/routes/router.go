@@ -24,7 +24,7 @@ func SetupRoutes(router *gin.Engine) {
 
 	passwordResetRepo := repository.NewPasswordResetRepository()
 	fileRepo := repository.NewFileRepository()
-	
+	departmentRepo := repository.NewDepartmentRepository()
 	doctorRepo := repository.NewDoctorRepository()
 addressRepo := repository.NewAddressRepository()
 	// Service
@@ -53,11 +53,12 @@ addressService := service.NewAddressService(addressRepo)
 	fileRepo,
 	cloudinaryStorage,
 )
+departmentService := service.NewDepartmentService(departmentRepo)
 vitalService := service.NewVitalService(repository.NewVitalRepository())
 	// Handler
 	patientHandler := handler.NewPatientHandler(patientService,userService,fileService)
-	doctorHandler := handler.NewDoctorHandler(doctorService)
-
+	doctorHandler := handler.NewDoctorHandler(doctorService,fileService)
+departmentHandler := handler.NewDepartmentHandler(departmentService)
 
 
 	userHandler := handler.NewUserHandler(userService,otpService,doctorService)
@@ -88,7 +89,6 @@ addressHandler := handler.NewAddressHandler(addressService,patientService)
 
 	router.GET("/patient/signup", patientHandler.PatientSignup)
 	router.GET("/doctor/signup", doctorHandler.DoctorSignup)
-	router.POST("/patient/logout", patientHandler.Logout)
 	//forgot password routes
 	router.GET("/:role/forgot-password", userHandler.ForgotPasswordForm)
      router.POST("/:role/auth/forgot-password", userHandler.SendForgotPasswordOTP)
@@ -106,6 +106,7 @@ addressHandler := handler.NewAddressHandler(addressService,patientService)
 	patient.Use(middleware.RequireRole("patient"))
 	{
 		patient.GET("/home", patientHandler.Home)
+		patient.GET("/logout", patientHandler.Logout)
 		patient.GET("/vitals", vitalDataHandler.GetPatientVitals)
 		patient.POST("/vitals", vitalDataHandler.SavePatientVitals)
 		patient.GET("/appointments/recent", appointmentHandler.GetRecentAppointments)
@@ -114,8 +115,9 @@ addressHandler := handler.NewAddressHandler(addressService,patientService)
 		patient.GET("/profile/complete", patientHandler.CheckProfileComplete)
 		patient.GET("/complete-profile", patientHandler.CompleteProfile)
 		patient.POST("/complete-profile", patientHandler.CompleteProfileRequest)
-	//	patient.GET("/complete-address", addressHandler.CompleteAddress)
-	//	patient.POST("/complete-address", addressHandler.CompleteAddressRequest)
+		patient.GET("/address", patientHandler.GetAddress)
+		patient.POST("/addAddress", addressHandler.AddAddress)
+		patient.GET("/completeAddress", patientHandler.CompleteAddress)
 
 	patient.GET("/appointments/all",appointmentHandler.GetPatientAppointments)
 patient.GET("/appointments", func(c *gin.Context) {
@@ -135,11 +137,16 @@ patient.POST("/upload-file",fileHandler.UploadFile)
 	doctor.Use(middleware.RequireRole("doctor"))
 	{
 		doctor.GET("/dashboard", doctorHandler.Dashboard)
+		doctor.GET("/logout", doctorHandler.Logout)
+
 		//doctor.GET("/change-password", doctorHandler.ChangePassword)
 		//doctor.POST("/change-password", doctorHandler.UpdatePassword)
 		doctor.GET("/complete-profile", doctorHandler.CompleteProfile)
-		doctor.GET("/verification-penidng",doctorHandler.VerificationPending)
+		doctor.GET("/verification-pending",doctorHandler.VerificationPending)
 		doctor.GET("/profile-rejected",doctorHandler.ProfileRejected)
+		doctor.GET("/basicprofile",doctorHandler.GetDoctorBasicProfile)
+		doctor.POST("/submit-verification", doctorHandler.SubmitVerification)
+doctor.GET("/departments",departmentHandler.GetDepartments)
 
 	}
 

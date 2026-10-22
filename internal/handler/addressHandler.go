@@ -31,7 +31,7 @@ func NewAddressHandler(
 func (h *addressHandler) AddAddress(c *gin.Context) {
 
 	// Get user ID from JWT middleware
-	patientIDValue, exists := c.Get("roleID")
+	patientIDValue, exists := c.Get("RoleID")
 
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{

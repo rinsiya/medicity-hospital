@@ -322,7 +322,7 @@
                 your address details.
             </p>
 
-            <form id="profileForm" method="POST" action="/patient/complete-address" enctype="multipart/form-data">
+            <form id="profileForm" method="POST" action="/patient/addAddress">
 
 <div class="form-group">
     <label for="address">Address</label>
@@ -365,39 +365,126 @@
         © 2026 MediCity Hospital. All Rights Reserved.
     </footer>
 
-    <script>
-        document.getElementById("profileForm").addEventListener("submit", async function (event) {
+  <script>
+    const form = document.getElementById("profileForm");
 
-            event.preventDefault();
+    // Check whether this page is being used for editing
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get("editMode") === "true";
 
-            const form = this;
-            const formData = new FormData(form);
 
-            try {
+    // Load existing address when editing
+    async function loadAddress() {
 
-                const response = await fetch("/patient/complete-address", {
-                    method: "POST",
-                    body: formData
-                });
+        if (!isEdit) {
+            return;
+        }
 
-                const data = await response.json();
+        try {
 
-                if (!response.ok || !data.success) {
-                    alert(data.message || "Failed to add address.");
-                    return;
-                }
+            const response = await fetch("/patient/address", {
+                method: "GET",
+                credentials: "include"
+            });
 
-                // Redirect to the URL returned by the backend
-                window.location.href = data.redirect;
+            const data = await response.json();
 
-            } catch (error) {
-
-                console.error("Profile update error:", error);
-
-                alert("Something went wrong. Please try again.");
+            if (!response.ok || !data.success) {
+                alert(data.message || "Failed to load address.");
+                return;
             }
-        });
-    </script>
+
+            if (!data.exists || !data.address) {
+                return;
+            }
+
+            const address = data.address;
+
+            document.getElementById("address").value =
+                address.address || "";
+
+            document.getElementById("place").value =
+                address.place || "";
+
+            document.getElementById("country").value =
+                address.country || "";
+
+            document.querySelector(".profile-card h1").textContent =
+                "Edit Your Address";
+
+            document.querySelector(".description").innerHTML =
+                "Update your address details.";
+
+            document.querySelector(".continue-btn").innerHTML =
+                'Update Address <span>→</span>';
+
+        } catch (error) {
+
+            console.error("Address loading error:", error);
+
+            alert("Unable to load address.");
+        }
+    }
+
+
+    // Validate and submit address
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const address = document.getElementById("address").value.trim();
+        const place = document.getElementById("place").value.trim();
+        const country = document.getElementById("country").value.trim();
+
+        if (!address) {
+            alert("Please enter your address.");
+            document.getElementById("address").focus();
+            return;
+        }
+
+        if (!place) {
+            alert("Please enter your place.");
+            document.getElementById("place").focus();
+            return;
+        }
+
+        if (!country) {
+            alert("Please enter your country.");
+            document.getElementById("country").focus();
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        try {
+
+            const response = await fetch("/patient/complete-address", {
+                method: "POST",
+                credentials: "include",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                alert(data.message || "Failed to save address.");
+                return;
+            }
+
+            window.location.href = data.redirect;
+
+        } catch (error) {
+
+            console.error("Address update error:", error);
+
+            alert("Something went wrong. Please try again.");
+        }
+    });
+
+
+    // Load address if editing
+    loadAddress();
+</script>
 
 </body>
 

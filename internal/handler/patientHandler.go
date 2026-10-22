@@ -6,11 +6,13 @@ import (
 	"medicity/internal/models"
 	"medicity/internal/service"
 	"medicity/logger"
+	"medicity/pkg/utils"
 	"mime/multipart"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type patientHandler struct {
@@ -31,6 +33,28 @@ func NewPatientHandler(
 	}
 }
 
+func (h *patientHandler) CompleteAddress(c *gin.Context) {
+	patientID := c.GetUint("RoleID")
+	if patientID == 0 {
+		logger.Log.Error(
+			"Unauthorized access to complete address",
+			zap.String("role", "patient"),
+			zap.Uint("patientID", patientID),
+		)
+
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	editMode := c.Query("edit") == "true"
+
+	c.HTML(http.StatusOK, "completeAddress.html", gin.H{
+		"editMode": editMode,
+	})
+}
 func (h *patientHandler) PatientSignup(c *gin.Context) {
 	c.HTML(http.StatusOK, "patientSignup.html", nil)
 }
@@ -88,7 +112,6 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 		return
 	}
 
-
 	var photoFile multipart.File
 	var photoHeader *multipart.FileHeader
 
@@ -112,7 +135,6 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 		})
 		return
 	}
-
 
 	err = h.patientService.CompleteProfileRequest(
 		patientID,
@@ -140,7 +162,6 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 		return
 	}
 
-	
 	// Upload profile photo to Cloudinary if provided
 
 	if photoFile != nil {
@@ -220,11 +241,78 @@ func (h *patientHandler) CheckProfileComplete(c *gin.Context) {
 }
 func (h *patientHandler) Home(c *gin.Context) {
 
-	userID:= c.GetUint("userID")
-	patientID:= c.GetUint("RoleID")
+	logger.Log.Info(
+		"Patient home request started",
+		zap.String("role", "patient"),
+	)
 
+	userIDValue, userExists := c.Get("UserID")
+	patientIDValue, patientExists := c.Get("RoleID")
+
+	if !userExists || !patientExists {
+		logger.Log.Warn(
+			"Patient home access denied: authentication context missing",
+			zap.String("role", "patient"),
+			zap.Bool("userIDExists", userExists),
+			zap.Bool("patientIDExists", patientExists),
+		)
+
+		c.HTML(http.StatusUnauthorized, "patientLogin.html", gin.H{
+			"success": false,
+			"error":   "User not authenticated",
+		})
+		return
+	}
+
+	userID, ok := userIDValue.(uint)
+	if !ok || userID == 0 {
+		logger.Log.Warn(
+			"Invalid user ID in authentication context",
+			zap.String("role", "patient"),
+		)
+
+		c.HTML(http.StatusUnauthorized, "patientLogin.html", gin.H{
+			"success": false,
+			"error":   "User not authenticated",
+		})
+		return
+	}
+
+	patientID, ok := patientIDValue.(uint)
+	if !ok || patientID == 0 {
+		logger.Log.Warn(
+			"Invalid patient ID in authentication context",
+			zap.Uint("userID", userID),
+			zap.String("role", "patient"),  
+		)
+  
+		c.HTML(http.StatusUnauthorized, "patientLogin.html", gin.H{
+			"success": false,
+			"error":   "Patient not authenticated",
+		})
+		return
+	}
+
+	logger.Log.Info(
+		"Loading patient home data",
+		zap.String("role", "patient"),
+		zap.Uint("userID", userID),
+		zap.Uint("patientID", patientID),
+	)
+
+	// Get patient details
 	patient, err := h.patientService.GetPatientByID(patientID, userID)
+
 	if err != nil {
+
+		logger.Log.Error(
+			"Failed to load patient details",
+			zap.String("role", "patient"),
+			zap.Uint("userID", userID),
+			zap.Uint("patientID", patientID),
+			zap.Error(err),
+		)
+
 		if errors.Is(err, service.ErrUserNotFound) {
 
 			c.JSON(http.StatusNotFound, gin.H{
@@ -233,37 +321,72 @@ func (h *patientHandler) Home(c *gin.Context) {
 			})
 			return
 		}
+
 		c.HTML(http.StatusInternalServerError, "patient-home.html", gin.H{
 			"error": "Internal server error",
 		})
 		return
 	}
-	user,err:=h.Service.GetUserByID(userID)
-if err != nil {
+
+	logger.Log.Info(
+		"Patient details loaded successfully",
+		zap.String("role", "patient"),
+		zap.Uint("userID", userID),
+		zap.Uint("patientID", patientID),
+	)
+
+ 	// Get user details
+	user, err := h.Service.GetUserByID(userID)
+
+	if err != nil {
+
+		logger.Log.Error(
+			"Failed to load user details",
+			zap.String("role", "patient"),
+			zap.Uint("userID", userID),
+			zap.Uint("patientID", patientID),
+			zap.Error(err),
+		)
+
 		if errors.Is(err, service.ErrUserNotFound) {
 
 			c.JSON(http.StatusNotFound, gin.H{
 				"success": false,
-				"message": "Patient not found",
+				"message": "User not found",
 			})
 			return
 		}
+
 		c.HTML(http.StatusInternalServerError, "patient-home.html", gin.H{
 			"error": "Internal server error",
 		})
 		return
 	}
-	
+
+	logger.Log.Info(
+		"User contact details loaded successfully",
+		zap.String("role", "patient"),
+		zap.Uint("userID", userID),
+		zap.Uint("patientID", patientID),
+	)
+
+	logger.Log.Info(
+		"Patient home loaded successfully",
+		zap.String("role", "patient"),
+		zap.Uint("userID", userID),
+		zap.Uint("patientID", patientID),
+	)
+
 	c.HTML(http.StatusOK, "patient-home.html", gin.H{
 		"patient": patient,
-		"user":user,
+		"user":    user,
 	})
 }
 
 // func (h *patientHandler) GetMiniProfile(c *gin.Context) {
 
-//     userIDValue, userExists := c.Get("userID")
-//     patientIDValue, exists := c.Get("roleID")
+//     userIDValue, userExists := c.Get("UserID")
+//     patientIDValue, exists := c.Get("RoleID")
 //     if !exists || !userExists {
 //         c.JSON(http.StatusUnauthorized, gin.H{
 //             "success": false,
@@ -284,29 +407,14 @@ if err != nil {
 //         return
 //     }
 
-//     c.JSON(http.StatusOK, gin.H{
-//         "success": true,
-//         "patient": patient,
-//     })
-// }
-// logout function to clear the JWT cookie and redirect to login page
+//	    c.JSON(http.StatusOK, gin.H{
+//	        "success": true,
+//	        "patient": patient,
+//	    })
+//	}
 func (h *patientHandler) Logout(c *gin.Context) {
-	// Clear the JWT cookie
-	c.SetCookie(
-		"access_token",
-		"",
-		-1, // expire immediately
-		"/",
-		"",
-		false,
-		true,
-	)
-
-	logger.Log.Info("User logged out")
-
-	c.Redirect(http.StatusSeeOther, "/patient/login")
+	utils.Logout(c, "/patient/login")
 }
-
 func (h *patientHandler) UpdatePassword(c *gin.Context) {
 
 	var input dto.ChangePasswordInput
@@ -335,4 +443,95 @@ func (h *patientHandler) UpdatePassword(c *gin.Context) {
 		}
 	}
 
+}
+
+func (h *patientHandler) GetAddress(c *gin.Context) {
+
+	logger.Log.Info(
+		"Patient address request started",
+		zap.String("role", "patient"),
+	)
+
+	patientIDValue, exists := c.Get("RoleID")
+
+	if !exists {
+		logger.Log.Warn(
+			"Patient address access denied: patient ID missing",
+			zap.String("role", "patient"),
+		)
+
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Patient not authenticated",
+		})
+		return
+	}
+
+	patientID, ok := patientIDValue.(uint)
+
+	if !ok || patientID == 0 {
+		logger.Log.Warn(
+			"Patient address access denied: invalid patient ID",
+			zap.String("role", "patient"),
+		)
+
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Patient not authenticated",
+		})
+		return
+	}
+
+	logger.Log.Info(
+		"Loading patient address",
+		zap.String("role", "patient"),
+		zap.Uint("patientID", patientID),
+	)
+
+	address, err := h.patientService.GetAddressByPatientID(patientID)
+
+	if err != nil {
+
+		// No address is not an error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			logger.Log.Info(
+				"Patient address not found",
+				zap.String("role", "patient"),
+				zap.Uint("patientID", patientID),
+			)
+
+			c.JSON(http.StatusOK, gin.H{
+				"success": true,
+				"exists":  false,
+				"address": nil,
+			})
+			return
+		}
+
+		logger.Log.Error(
+			"Failed to load patient address",
+			zap.String("role", "patient"),
+			zap.Uint("patientID", patientID),
+			zap.Error(err),
+		)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to load address",
+		})
+		return
+	}
+
+	logger.Log.Info(
+		"Patient address loaded successfully",
+		zap.String("role", "patient"),
+		zap.Uint("patientID", patientID),
+	)
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"exists":  true,
+		"address": address,
+	})
 }

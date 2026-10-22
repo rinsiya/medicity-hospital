@@ -111,8 +111,7 @@ result, err := s.cloudinary.Upload(
 	return dbFile, nil
 }
 
-func generatePublicID(
-	category models.FileCategory,
+func generatePublicID(category models.FileCategory,
 	userID uint,
 	fileID string,
 ) string {
@@ -151,7 +150,7 @@ func generatePublicID(
 			fileID,
 		)
 
-	case models.FileCategoryOther:
+	case models.FileCategoryExperienceProof:
 
 		return fmt.Sprintf(
 			"medicity/other/user_%d_%s",

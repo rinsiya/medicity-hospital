@@ -14,21 +14,21 @@ type PatientService interface {
 	GetPatientByID(patientID, userID uint) (*dto.PatientProfile, error)
 	IsProfileComplete(patientID uint) (bool, error)
 	FindByID(patientID uint) (*models.Patient, error)
-
-	CompleteProfileRequest(patientID uint,userID uint,dob string,gender string,weight string,height string) error
+	GetAddressByPatientID(patientID uint) (*models.Address, error)
+	CompleteProfileRequest(patientID uint, userID uint, dob string, gender string, weight string, height string) error
 }
 
 type patientService struct {
 	patientRepo repository.PatientRepository
-	fileRepo repository.FileRepository
+	fileRepo    repository.FileRepository
 }
 
 func NewPatientService(patientRepo repository.PatientRepository,
 	fileRepo repository.FileRepository,
-	) PatientService {
+) PatientService {
 	return &patientService{
 		patientRepo: patientRepo,
-		fileRepo: fileRepo,
+		fileRepo:    fileRepo,
 	}
 }
 
@@ -110,21 +110,23 @@ func (s *patientService) GetPatientByID(patientID, userID uint) (*dto.PatientPro
 		return nil, err
 	}
 	profile := &dto.PatientProfile{
-		PatientName: patient.FirstName + " " + patient.LastName,
-		Gender:      patient.Gender,
-		DOB:         patient.DOB,
-		Height:      patient.Height,
-		Weight:      patient.Weight,
+		PatientName:  patient.FirstName + " " + patient.LastName,
+		Gender:       patient.Gender,
+		DOB:          patient.DOB,
+		Height:       patient.Height,
+		Weight:       patient.Weight,
 		ProfilePhoto: "",
 	}
 	file, err := s.fileRepo.GetProfilePhotoByUserID(userID)
 
 	if err == nil && file != nil {
 		profile.ProfilePhoto = file.SecureURL
+
+		return profile, nil
+	} else {
+		return nil, err
 	}
 
-	return profile, nil
-	
 }
 
 func (s *patientService) FindByID(patientID uint) (*models.Patient, error) {
@@ -134,4 +136,8 @@ func (s *patientService) FindByID(patientID uint) (*models.Patient, error) {
 	}
 
 	return patient, nil
+}
+
+func (s *patientService) GetAddressByPatientID(patientID uint) (*models.Address, error) {
+	return s.patientRepo.GetAddressByPatientID(patientID)
 }

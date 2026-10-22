@@ -257,7 +257,7 @@ select {
 
 .right-column {
     display: flex;
-    flex-direction: column;
+    flex-direction: column;gap: 30px;
 }
 
 .profile-preview {

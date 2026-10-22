@@ -1,207 +1,1013 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediCity - Doctor Verification</title>
     <link rel="stylesheet" href="/static/css/doctor-verification.css">
 </head>
+
 <body>
 
-<header class="topbar">
-    <div class="topbar-inner">
-        <button class="signout-btn" type="button">Sign out</button>
-    </div>
-</header>
+    <header class="topbar">
+        
+        <section class="brand">
+            <div class="brand-logo"><span>+</span>MediCity</div><a href="/doctor/logout" class="logout-link">
+            <button class="signout-btn" type="button">Sign out</button></a>
+        
+        </section>
 
-<main>
-    <section class="brand">
-        <div class="brand-logo"><span>+</span>MediCity</div>
-    </section>
+    </header>
 
-    <section class="page-container">
-        <div class="page-heading">
-            <h1>Doctor Verification</h1>
-            <p>Complete your professional profile and upload required medical credentials to<br>
-               activate your practitioner dashboard and start accepting appointments.</p>
-        </div>
+    <main>
+        
 
-        <div class="top-grid">
-            <div class="left-column">
+        <section class="page-container">
 
-                <div class="pending-card">
-                    <div class="shield">♡</div>
+            <div class="page-heading">
+                <h1>Doctor Verification</h1>
+                <p>
+                    Complete your professional profile and upload required medical credentials to<br>
+                    activate your practitioner dashboard and start accepting appointments.
+                </p>
+            </div>
+
+            <!-- Verification status -->
+            <div class="pending-card">
+                <div class="shield">♡</div>
+                <div>
+                    <strong>Access Pending Verification</strong>
+                    <small>Your documents are currently under review by our medical board.</small>
+                </div>
+            </div>
+
+            <!-- Registration / Personal Details -->
+            <section class="card registration-card">
+                <h2>Registration Details</h2>
+                <p class="section-subtitle">Your registered contact details and professional profile information.</p>
+
+                <div class="details-grid">
                     <div>
-                        <strong>Access Pending Verification</strong>
-                        <small>Your documents are currently under review by our medical board.</small>
+                        <label>NAME</label>
+                        <span class="name-value"></span>
+                    </div>
+
+                    <div>
+                        <label>EMAIL ADDRESS</label>
+                        <span class="email-value"></span>
+                    </div>
+
+                    <div>
+                        <label>CONTACT NUMBER</label>
+                        <span class="phone-value"></span>
+                    </div>
+
+                    <div>
+                        <label>PROFILE PHOTO</label>
+                        <input type="file" id="profilePhoto" accept="image/png,image/jpeg">
+                    </div>
+                </div>
+<form id="doctorProfileForm" enctype="multipart/form-data" type="POST">
+                <div class="form-grid">
+                    <div>
+                        <label>DEPARTMENT</label>
+                        <select id="department">
+                            <option value="">Select Department</option>
+                        </select>
+                    </div>          
+
+                    <div>       
+                        <label>PROFESSIONAL ROLE</label>
+                        <input type="text" id="professionalRole" name="professional_role"
+                            placeholder="Eg. Senior cardiologist">
+                    </div>
+
+                    <div>
+                        <label>HOSPITAL ADDRESS</label>
+                        <input type="text" id="hospitalAddress" name="hospital_address"
+                            placeholder="Eg: Metro Hospital, Calicut">
                     </div>
                 </div>
 
-                <div class="card registration-card">
-                    <h2>Registration Details</h2>
+                <div class="bio-section">
+                    <label>PROFESSIONAL BIOGRAPHY</label>
+                    <small>
+                        Write about your career journey. This will be added to your public profile.
+                    </small>
+                    <textarea id="biography" name="biography"></textarea>
+                </div>
+            </section>
 
-                    <div class="details-grid">
-                        <div>
-                            <label>EMAIL ADDRESS</label>
-                            <span>dr.sterling@gmail.com</span>
+            <!-- Document Upload -->
+            <section class="card upload-card">
+                <h2>Document Upload</h2>
+                <p class="section-subtitle">
+                    Add the certificates and supporting documents required for verification.
+                </p>
+
+                <div class="document-form">
+
+                    <div>
+                        <label>DOCUMENT CATEGORY</label>
+                        <select id="documentCategory">
+                            <option value="">Select document type</option>
+                            <option value="doctor_certificate">Medical Certificate</option>
+                            <option value="identity_proof">Identity Proof</option>
+                            <option value="experience_proof">Proof of Experience</option>
+                        </select>
+                    </div>
+<br>
+                    <div>
+                        <label>REMARKS</label>
+                        <input type="text" id="documentRemarks" placeholder="Eg. MBBS Certificate">
+                    </div>
+<br>
+                    <div class="document-file-field">
+                        <label>CHOOSE FILE</label>
+
+                        <div class="upload-box" id="uploadBox">
+                            <div class="upload-icon">♙</div>
+                            <strong>
+                                Choose Certificate / Proof
+                            </strong>
+                            <small>
+                                PDF, DOC, DOCX, JPG, JPEG, PNG (Max 5MB)
+                            </small>
                         </div>
-                        <div>
-                            <label>CONTACT NUMBER</label>
-                            <span>09198123456</span>
-                        </div>
-                        <div>
-                            <label>FULL NAME</label>
-                            <span>Dr. Jonathan Sterling</span>
-                        </div>
+
+                        <input type="file" id="documentFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" hidden>
                     </div>
 
-                    <div class="bio-section">
-                        <label>Professional Biography</label>
-                        <small>Write about your career journey. This will be added to your public profile.</small>
-                        <textarea></textarea>
+                    <div class="document-add-button">
+                        <button class="small-green-btn" type="button" id="addDocumentBtn">
+                            ＋ Add Document
+                        </button>
                     </div>
 
-                    <div class="form-grid">
-                        <div>
-                            <label>DEPARTMENT</label>
-                            <select>
-                                <option>select department</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>PROFESSIONAL ROLE</label>
-                            <input type="text" placeholder="Eg. Senior cardiologist">
-                        </div>
-                        <div>
-                            <label>HOSPITAL ADDRESS</label>
-                            <input type="text" placeholder="Eg: Metro Hospital, Calicut">
-                        </div>
-                        <div>
-                            <label>CHOOSE PROFILE PHOTO</label>
-                            <input type="text" placeholder="Select image">
-                        </div>
+                </div>
+
+                <div class="tag-row" id="documentList"></div>
+            </section>
+
+            <!-- Qualifications and Experience -->
+            <section class="card qualifications-card">
+                <h2>Manage Qualifications</h2>
+                <p class="section-subtitle">
+                    Add and manage your professional medical qualifications.
+                </p>
+
+                <div class="qualification-form">
+
+                    <div>
+                        <label>QUALIFICATION</label>
+                        <select id="qualification">
+                            <option value="">Select Qualification</option>
+                            <option value="MBBS">MBBS</option>
+                            <option value="MD">MD</option>
+                            <option value="MS">MS</option>
+                            <option value="DM">DM</option>
+                            <option value="MCh">MCh</option>
+                            <option value="BDS">BDS</option>
+                            <option value="MDS">MDS</option>
+                        </select>
                     </div>
 
-                    <button class="primary-btn update-btn" type="button">Update <span>▷</span></button>
-                </div>
-            </div>
-
-            <aside class="right-column">
-                <div class="card profile-preview">
-                    <div class="preview-header">
-                        <span>PUBLIC PROFILE PREVIEW</span>
-                        <b>INCOMPLETE</b>
+                    <div>
+                        <label>BRANCH OF STUDY/SPECIALISATION</label>
+                        <input type="text" id="specialisation" placeholder="Eg. General Medicine, Cardiology">
                     </div>
 
-                    <div class="profile-photo">♙</div>
-                    <div class="doctor-name">Dr. Jonathan Sterling</div>
-                    <div class="doctor-role">Senior Cardiologist</div>
-
-                    <div class="progress">
-                        <div class="progress-bar"></div>
-                    </div>
-                    <div class="progress-label">25% Profile Completion</div>
-                </div>
-
-                <div class="card upload-card">
-                    <h2>Document Upload</h2>
-
-                    <div class="upload-box">
-                        <div class="upload-icon">♙</div>
-                        <strong>Necessary Certificates and<br>proof of experience</strong>
-                        <small>PDF, JPG (Max 5MB)</small>
+                    <div>
+                        <label>UNIVERSITY</label>
+                        <input type="text" id="university" placeholder="Name of university">
                     </div>
 
-                    <label>Remarks</label>
-                    <input type="text">
+                    <div>
+                        <label>YEAR OF STUDY</label>
+                        <input type="number" id="qualificationYear" placeholder="Year of study" min="1900" max="2100">
+                    </div>
 
-                    <button class="primary-btn" type="button">Upload <span>▷</span></button>
+                    <span></span>
+
+                    <div>
+                        <button class="small-green-btn" type="button" id="addQualificationBtn">
+                            ＋ Add Qualification
+                        </button>
+                    </div>
+
                 </div>
-            </aside>
-        </div>
 
-        <section class="card qualifications-card">
-            <h2>Manage Qualifications</h2>
-            <p class="section-subtitle">Add and manage your professional medical qualifications.</p>
+                <div class="tag-row" id="qualificationList"></div>
 
-            <div class="qualification-form">
-                <div>
-                    <label>QUALIFICATION</label>
-                    <select>
-                        <option>Select Qualification</option>
-                    </select>
+                <div class="divider"></div>
+
+                <h2>Add Experience Here</h2>
+                <p class="section-subtitle">
+                    Add and manage your professional experience.
+                </p>
+
+                <div class="experience-years">
+                    <label>YEARS OF EXPERIENCE</label>
+                    <input type="number" id="experience" name="experience" placeholder="e.g. 12">
                 </div>
-                <div>
-                    <label>BRANCH OF STUDY/SPECIALISATION</label>
-                    <input type="text" placeholder="Eg. General Medicine, Cardiology">
-                </div>
-                <div>
-                    <label>UNIVERSITY</label>
-                    <input type="text" placeholder="Name of university">
-                </div>
-                <div>
-                    <label>YEAR OF STUDY</label>
-                    <input type="text" placeholder="Year of study">
-                </div>
-                <button class="small-green-btn" type="button">＋ Add Qualification</button>
-            </div>
 
-            <div class="tag-row">
-                <span class="tag">MBBS in General Medicine <b>×</b></span>
-                <span class="tag">MD in Cardiology <b>×</b></span>
-            </div>
+                <div class="experience-form">
+                    <div>
+                        <label>
+                            PROFESSIONAL EXPERIENCE:
+                            <span>[Add all experience in descending order of time, in the given format : General physician&#10;2018-2020 - ABC Hospital ]</span>
+                        </label>
 
-            <div class="divider"></div>
+                        <textarea id="professionalExperience"
+                            placeholder="General physician&#10;2018-2020 - ABC Hospital"></textarea>
+                    </div>
 
-            <h2>Add Experience Here</h2>
-            <p class="section-subtitle">Add and manage your professional experience.</p>
-
-            <div class="experience-years">
-                <label>YEARS OF EXPERIENCE</label>
-                <input type="text" placeholder="e.g. 12">
-            </div>
-
-            <div class="experience-form">
-                <div>
-                    <label>PROFESSIONAL EXPERIENCE: <span>[Add all experience in descending order of time, in the given format]</span></label>
-                    <textarea placeholder="General physician&#10;2018-2020 - ABC Hospital"></textarea>
+                    <button class="small-green-btn" type="button" id="addExperienceBtn">
+                        ＋ Add Experience
+                    </button>
                 </div>
-                <button class="small-green-btn" type="button">＋ Add Experience</button>
-            </div>
 
-            <div class="experience-tags">
-                <div class="experience-tag">
-                    <strong>Senior Physician</strong>
-                    <span>2020 - Present | ABC Heart Hospital</span>
-                    <b>×</b>
+                <div class="experience-tags">
+                    <div id="experienceList"></div>
                 </div>
-                <div class="experience-tag">
-                    <strong>General Physician</strong>
-                    <span>2018 - 2020 | City Central Clinic</span>
-                    <b>×</b>
+            </section>
+
+            <!-- Final Confirmation -->
+            <section class="card confirmation-card">
+                <h2>Final Confirmation</h2>
+
+                <label class="checkbox-row">
+                    <input type="checkbox" id="confirmationCheckbox">
+
+                    <span>
+                        All the given proofs and data are true as per my
+                        knowledge and medical license.
+                    </span>
+                </label>
+<button type="submit" class="primary-btn submit-btn" id="submitVerificationBtn">
+                    Update profile <span>▷</span></button>
+                <button class="primary-btn submit-btn" type="button" id="submitVerificationBtn">
+                    Submit for Verification <span>▷</span>
+                </button>
+            </form>
+   
+
+                <div class="confirmation-note">
+                    ◷ Usually takes 2-3 business days.
                 </div>
-            </div>
+            </section>
+
         </section>
+    </main>
 
-        <section class="card confirmation-card">
-            <h2>Final Confirmation</h2>
+    <footer>
+        © 2026 MediCity Hospital. All Rights Reserved.
+    </footer>
+    <script>
 
-            <label class="checkbox-row">
-                <input type="checkbox">
-                <span>All the given proofs and data are true as per my knowledge and medical license.</span>
-            </label>
+        // Qualifications added by the doctor.
+        // These are NOT saved to the database yet.
+        let qualifications = [];
+        let experiences = [];
+        let documents = [];
 
-            <button class="primary-btn submit-btn" type="button">Submit for Verification <span>▷</span></button>
-            <button class="save-btn" type="button">Save Progress</button>
+        document
+            .getElementById("uploadBox")
+            .addEventListener("click", function () {
 
-            <div class="confirmation-note">◷ Usually takes 2-3 business days.</div>
-        </section>
-    </section>
-</main>
+                document
+                    .getElementById("documentFile")
+                    .click();
+            });
 
-<footer>
-    © 2026 MediCity Hospital. All Rights Reserved.
-</footer>
+        document
+            .getElementById("documentFile")
+            .addEventListener("change", function () {
 
+                const file = this.files[0];
+
+                if (!file) {
+                    return;
+                }
+
+                console.log("Selected file:", file.name);
+            });
+
+        document
+            .getElementById("addDocumentBtn")
+            .addEventListener("click", addDocument);
+
+        function addDocument() {
+
+            const fileInput =
+                document.getElementById("documentFile");
+
+            const category =
+                document.getElementById("documentCategory").value;
+
+            const remarks =
+                document.getElementById("documentRemarks").value.trim();
+
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError("Please select a file.");
+                return;
+            }
+
+            if (!category) {
+                showError("Please select the document type.");
+                return;
+            }
+
+            if (!remarks) {
+                showError("Please enter remarks.");
+                return;
+            }
+
+            // Maximum 5 MB
+            const maxSize = 5 * 1024 * 1024;
+
+            if (file.size > maxSize) {
+                showError("File size must not exceed 5 MB.");
+                return;
+            }
+
+            const allowedTypes = [
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "image/jpeg",
+                "image/png"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                showError(
+                    "Only PDF, DOC, DOCX, JPG, JPEG and PNG files are allowed."
+                );
+                return;
+            }
+
+            documents.push({
+                file: file,
+                category: category,
+                remarks: remarks
+            });
+
+            renderDocuments();
+
+            // Clear inputs
+            fileInput.value = "";
+            document.getElementById("documentCategory").value = "";
+            document.getElementById("documentRemarks").value = "";
+        }
+
+
+function renderDocuments() {
+
+    const documentList = document.getElementById("documentList");
+
+    documentList.innerHTML = "";
+
+    documents.forEach((doc, index) => {
+
+        const item = document.createElement("div");
+
+        item.className = "document-item";
+
+        item.innerHTML = `
+            <div>
+                <strong>${doc.file.name}</strong>
+                <small>
+                    ${formatDocumentCategory(doc.category)}
+                    ${doc.remarks ? " - " + doc.remarks : ""}
+                </small>
+            </div>
+
+            <button
+                type="button"
+                onclick="removeDocument(${index})">
+                ×
+            </button>
+        `;
+
+        documentList.appendChild(item);
+    });
+}
+        function formatDocumentCategory(category) {
+
+            switch (category) {
+
+                case "doctor_certificate":
+                    return "Medical Certificate";
+
+                case "identity_proof":
+                    return "Identity Proof";
+
+                case "experience_proof":
+                    return "Proof of Experience";
+
+                default:
+                    return category;
+            }
+        }
+
+        function removeDocument(index) {
+
+            documents.splice(index, 1);
+
+            renderDocuments();
+        }
+
+        documents.forEach((document) => {
+
+            formData.append(
+                "documents",
+                document.file
+            );
+
+            formData.append(
+                "document_categories",
+                document.category
+            );
+
+            formData.append(
+                "document_remarks",
+                document.remarks
+            );
+        });
+        document
+            .getElementById("addQualificationBtn")
+            .addEventListener("click", addQualification);
+
+        document
+            .getElementById("addExperienceBtn")
+            .addEventListener("click", addExperience);
+
+        function addExperience() {
+
+            const experience =
+                document.getElementById("professionalExperience").value.trim();
+
+            if (!experience) {
+                showError("Please enter your professional experience.");
+                return;
+            }
+
+            // Add experience to JavaScript array
+            experiences.push({
+                experience: experience
+            });
+
+            // Display experiences
+            renderExperiences();
+
+            // Clear textarea
+            document.getElementById("professionalExperience").value = "";
+        }
+
+        function renderExperiences() {
+
+            const experienceList =
+                document.getElementById("experienceList");
+
+            experienceList.innerHTML = "";
+
+            experiences.forEach((item, index) => {
+
+                const tag = document.createElement("div");
+
+                tag.className = "experience-tag";
+
+                tag.innerHTML = `
+            <div>
+                ${item.experience.replace(/\n/g, "<br>")}
+            </div>
+
+            <b
+                onclick="removeExperience(${index})"
+                style="cursor:pointer;"
+                title="Remove">
+                ×
+            </b>
+        `;
+
+                experienceList.appendChild(tag);
+            });
+        }
+
+
+        function removeExperience(index) {
+
+            experiences.splice(index, 1);
+
+            renderExperiences();
+        }
+        function addQualification() {
+
+            const qualification =
+                document.getElementById("qualification").value.trim();
+
+            const specialisation =
+                document.getElementById("specialisation").value.trim();
+
+            const university =
+                document.getElementById("university").value.trim();
+
+            const year =
+                document.getElementById("qualificationYear").value.trim();
+
+
+            // Validation
+            if (!qualification) {
+                showError("Please select a qualification.");
+                return;
+            }
+
+            if (!specialisation) {
+                showError("Please enter the branch or specialisation.");
+                return;
+            }
+
+            if (!university) {
+                showError("Please enter the university.");
+                return;
+            }
+
+            if (!year) {
+                showError("Please enter the year of study.");
+                return;
+            }
+
+
+            // Create temporary qualification object
+            const newQualification = {
+                qualification: qualification,
+                specialisation: specialisation,
+                university: university,
+                year: Number(year)
+            };
+
+
+            // Add to JavaScript array
+            qualifications.push(newQualification);
+
+
+            // Display it on the page
+            renderQualifications();
+
+
+            // Clear the form
+            document.getElementById("qualification").value = "";
+            document.getElementById("specialisation").value = "";
+            document.getElementById("university").value = "";
+            document.getElementById("qualificationYear").value = "";
+        }
+
+
+        function renderQualifications() {
+
+            const qualificationList =
+                document.getElementById("qualificationList");
+
+            qualificationList.innerHTML = "";
+
+
+            qualifications.forEach((item, index) => {
+
+                const tag = document.createElement("span");
+
+                tag.className = "tag";
+
+                tag.innerHTML = `
+            ${item.qualification} in ${item.specialisation}<br>university:
+            ${item.university} , year: ${item.year}
+            <b
+                onclick="removeQualification(${index})"
+                style="cursor:pointer;"
+                title="Remove"
+            >
+                ×
+            </b>
+        `;
+
+                qualificationList.appendChild(tag);
+            });
+        }
+
+
+        function removeQualification(index) {
+
+            qualifications.splice(index, 1);
+
+            renderQualifications();
+        }
+
+
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            await Promise.all([
+                loadDoctorProfile(),
+                loadDepartments(),
+
+            ]);
+
+        });
+        async function loadDoctorProfile() {
+
+            try {
+
+                const response = await fetch(
+                    "/doctor/basicprofile",
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.message ||
+                        "Failed to load doctor profile"
+                    );
+                }
+
+                const doctor = data.profile;
+
+                document.querySelector(".email-value").textContent =
+                    doctor.email || "";
+
+                document.querySelector(".phone-value").textContent =
+                    doctor.phone || "";
+
+                document.querySelectorAll(".name-value").forEach(element => {
+                    element.textContent = doctor.name || "";
+                });
+
+            } catch (error) {
+
+                console.error(
+                    "Profile loading error:",
+                    error
+                );
+
+                showError("Unable to load your profile.");
+            }
+        }
+
+
+        //♙
+        async function loadDepartments() {
+
+            try {
+
+                const response = await fetch("/doctor/departments", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to load departments");
+                }
+
+                const departmentSelect =
+                    document.getElementById("department");
+
+                departmentSelect.innerHTML =
+                    `<option value="">Select Department</option>`;
+
+                data.departments.forEach(department => {
+
+                    const option = document.createElement("option");
+
+                    option.value = department.department_id;
+                    option.textContent = department.department_name;
+                    console.log(department.department_name)
+                    departmentSelect.appendChild(option);
+                });
+
+            } catch (error) {
+
+                console.error("Department loading error:", error);
+
+                const departmentSelect =
+                    document.getElementById("department");
+
+                departmentSelect.innerHTML =
+                    `<option value="">Unable to load departments</option>`;
+            }
+        }
+
+
+        document
+            .getElementById("doctorProfileForm")
+            .addEventListener("submit", updateDoctorProfile);
+
+
+        async function updateDoctorProfile(event) {
+
+            event.preventDefault();
+
+            const form = document.getElementById("doctorProfileForm");
+
+            const formData = new FormData(form);
+
+            try {
+
+                const response = await fetch("/api/doctor/profile", {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to update profile");
+                }
+
+                showSuccess("Profile updated successfully.");
+
+            } catch (error) {
+
+                console.error("Profile update error:", error);
+
+                showError(error.message);
+            }
+        }
+
+
+        document
+            .getElementById("submitVerificationBtn")
+            .addEventListener("click", submitForVerification);
+
+
+        async function submitForVerification() {
+
+            const confirmed =
+                document.getElementById("confirmationCheckbox").checked;
+
+            if (!confirmed) {
+                showError(
+                    "Please confirm that all the information and documents are true."
+                );
+                return;
+            }
+
+            if (qualifications.length === 0) {
+                showError(
+                    "Please add at least one professional qualification."
+                );
+                return;
+            }
+
+            const department =
+                document.getElementById("department").value;
+
+            const professionalRole =
+                document.getElementById("professionalRole").value.trim();
+
+            const hospitalAddress =
+                document.getElementById("hospitalAddress").value.trim();
+
+            const experience =
+                document.getElementById("experience").value.trim();
+
+            const biography =
+                document.getElementById("biography").value.trim();
+
+            const profilePhoto =
+                document.getElementById("profilePhoto").files[0];
+
+
+            if (!department) {
+                showError("Please select a department.");
+                return;
+            }
+
+            if (!professionalRole) {
+                showError("Please enter your professional role.");
+                return;
+            }
+
+
+
+            if (!profilePhoto) {
+                showError("Please select a profile photo.");
+                return;
+            }
+
+            if (!experience) {
+                showError("Please enter your years of experience.");
+                return;
+            }
+            if (experiences.length === 0) {
+                showError("Please add at least one professional experience.");
+                return;
+            }
+            const formData = new FormData();
+
+            formData.append(
+                "department_id",
+                department
+            );
+
+            formData.append(
+                "professional_role",
+                professionalRole
+            );
+
+            formData.append(
+                "hospital_address",
+                hospitalAddress
+            );
+
+            formData.append(
+                "experience",
+                experience
+            );
+
+            formData.append(
+                "biography",
+                biography
+            );
+
+            formData.append(
+                "qualifications",
+                JSON.stringify(qualifications)
+            );
+
+            formData.append(
+                "file",
+                profilePhoto
+            );
+
+            formData.append(
+                "experiences",
+                JSON.stringify(experiences)
+            );
+
+            documents.forEach((document) => {
+
+                formData.append(
+                    "documents",
+                    document.file
+                );
+
+                formData.append(
+                    "document_categories",
+                    document.category
+                );
+
+                formData.append(
+                    "document_remarks",
+                    document.remarks
+                );
+            })
+            try {
+
+                const response = await fetch(
+                    "/doctor/submit-verification",
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        body: formData
+                    }
+                );
+
+    const data = await response.json();
+
+if (!response.ok || !data.success) {
+    throw new Error(
+        data.message || "Failed to submit verification."
+    );
+}
+
+// Save messages so the next page can display them
+if (data.messages && data.messages.length > 0) {
+    sessionStorage.setItem(
+        "profileUpdateMessages",
+        JSON.stringify(data.messages)
+    );
+} else {
+    sessionStorage.removeItem("profileUpdateMessages");
+}
+
+window.location.href = "/doctor/verification-pending";
+            } catch (error) {
+
+                console.error(
+                    "Verification submission error:",
+                    error
+                );
+
+                showError(error.message);
+            }
+        }
+
+function validateDoctorForm() {
+
+    const department =
+        document.getElementById("department").value.trim();
+
+    const professionalRole =
+        document.getElementById("professionalRole").value.trim();
+
+    const hospitalAddress =
+        document.getElementById("hospitalAddress").value.trim();
+
+    const biography =
+        document.getElementById("biography").value.trim();
+
+    const experience =
+        document.getElementById("experience").value.trim();
+
+    const profilePhoto =
+        document.getElementById("profilePhoto").files[0];
+
+    const confirmationCheckbox =
+        document.getElementById("confirmationCheckbox").checked;
+
+
+    // Department
+    if (!department) {
+        showError("Please select a department.");
+        document.getElementById("department").focus();
+        return false;
+    }
+
+    // Professional role
+    if (!professionalRole) {
+        showError("Please enter your professional role.");
+        document.getElementById("professionalRole").focus();
+        return false;
+    }
+
+    // Hospital address
+    if (!hospitalAddress) {
+        showError("Please enter the hospital address.");
+        document.getElementById("hospitalAddress").focus();
+        return false;
+    }
+
+    // Biography
+    if (!biography) {
+        showError("Please enter your professional biography.");
+        document.getElementById("biography").focus();
+        return false;
+    }
+
+    // Profile photo
+    if (!profilePhoto) {
+        showError("Please select a profile photo.");
+        document.getElementById("profilePhoto").focus();
+        return false;
+    }
+
+    // Experience years
+    if (!experience) {
+        showError("Please enter your years of experience.");
+        document.getElementById("experience").focus();
+        return false;
+    }
+
+    if (Number(experience) < 0) {
+        showError("Years of experience cannot be negative.");
+        document.getElementById("experience").focus();
+        return false;
+    }
+
+    // Qualifications
+    if (qualifications.length === 0) {
+        showError("Please add at least one professional qualification.");
+        return false;
+    }
+
+    // Professional experience
+    if (experiences.length === 0) {
+        showError("Please add at least one professional experience.");
+        return false;
+    }
+
+    // Confirmation
+    if (!confirmationCheckbox) {
+        showError(
+            "Please confirm that all the information and documents are true."
+        );
+        document.getElementById("confirmationCheckbox").focus();
+        return false;
+    }
+
+    return true;
+}
+
+
+    </script>
 </body>
+
 </html>

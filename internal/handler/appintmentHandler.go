@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"medicity/internal/service"
 	"math"
+	"medicity/internal/service"
 	"net/http"
 	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,9 +28,9 @@ func NewAppointmentHandler(appointmentService service.AppointmentService, patien
 
 func (h *appointmentHandler) GetRecentAppointments(c *gin.Context) {
 
-	//userIDValue, userExists := c.Get("userID")
-patientID, exists := c.Get("RoleID")
-	if !exists{
+	//userIDValue, userExists := c.Get("UserID")
+	patientID, exists := c.Get("RoleID")
+	if !exists {
 		c.JSON(
 			http.StatusUnauthorized,
 			gin.H{
@@ -40,8 +41,7 @@ patientID, exists := c.Get("RoleID")
 		return
 	}
 
-
-		appointments, err := h.appointmentService.GetRecentAppointments(uint(patientID.(uint)))
+	appointments, err := h.appointmentService.GetRecentAppointments(uint(patientID.(uint)))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -52,12 +52,11 @@ patientID, exists := c.Get("RoleID")
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":     true,
+		"success":      true,
 		"appointments": appointments,
 	})
 
-
-if patientID == 0 {
+	if patientID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "Patient not authenticated",
@@ -68,7 +67,7 @@ if patientID == 0 {
 func (h *appointmentHandler) GetPatientAppointments(c *gin.Context) {
 
 	patientID := c.GetUint("RoleID")
-if patientID == 0 {
+	if patientID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "Patient not authenticated",
@@ -107,7 +106,7 @@ if patientID == 0 {
 	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
 
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
+		"success":      true,
 		"appointments": appointments,
 		"pagination": gin.H{
 			"current_page": page,

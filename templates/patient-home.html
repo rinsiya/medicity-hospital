@@ -36,7 +36,7 @@
         .vital-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8px;
+            font-size: 9px;
         }
 
 
@@ -44,7 +44,7 @@
             text-align: left;
             background: #eef2f1;
             color: #596461;
-            font-size: 7px;
+            font-size: 8px;
             padding: 8px 10px;
         }
 
@@ -87,7 +87,7 @@
 
         .add-vital label {
             display: block;
-            font-size: 7px;
+            font-size: 8px;
             color: #59625f;
             margin: 8px 0 4px;
         }
@@ -106,7 +106,7 @@
 
             color: #4e5855;
 
-            font-size: 7px;
+            font-size: 8px;
 
             outline: none;
         }
@@ -133,7 +133,7 @@
 
             color: #89918e;
 
-            font-size: 7px;
+            font-size: 12px;
 
             padding: 25px 5px;
         }
@@ -274,11 +274,11 @@
 
     <header class="top-header">
         <div class="utility-bar">
-            
+
             <a href="/search">Search</a>
-            <form action="/patient/logout" method="POST">
+            <a href="/patient/logout">
                 <button class="sign-out">Sign out</button>
-            </form>
+            </a>
         </div>
 
         <div class="main-nav">
@@ -490,54 +490,40 @@
                             <a href="/patient/files">View All</a>
                         </div>
 
-<div class="reports card" id="medical-reports">
+                        <div class="reports card" id="medical-reports">
 
-    <form
-        action="/patient/upload-file"
-        method="POST"
-        enctype="multipart/form-data"
-        id="medicalReportForm"
-    >
+                            <form action="/patient/upload-file" method="POST" enctype="multipart/form-data"
+                                id="medicalReportForm">
 
-        <input
-            type="hidden"
-            name="category"
-            value="medical_report"
-        >
+                                <input type="hidden" name="category" value="medical_report">
 
-        <input
-            type="file"
-            name="file"
-            id="medicalReportFile"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            hidden
-            required
-        >
+                                <input type="file" name="file" id="medicalReportFile"
+                                    accept="image/jpeg,image/png,image/webp,application/pdf" hidden required>
 
-        <label for="medicalReportFile" class="drop-zone">
+                                <label for="medicalReportFile" class="drop-zone">
 
-            <div class="upload-icon">⇧</div>
+                                    <div class="upload-icon">⇧</div>
 
-            <strong>Upload Medical Report</strong>
+                                    <strong>Upload Medical Report</strong>
 
-            <span>
-                Supports Lab Reports, X-Ray, ECGs
-                (Max 10MB)
-            </span>
+                                    <span>
+                                        Supports Lab Reports, X-Ray, ECGs
+                                        (Max 10MB)
+                                    </span>
 
-        </label>
+                                </label>
 
-        <button type="submit" class="green-btn">
-            Upload
-        </button>
+                                <button type="submit" class="green-btn">
+                                    Upload
+                                </button>
 
-    </form>
+                            </form>
 
-    <div id="medical-reports-list">
-        <p>Loading medical reports...</p>
-    </div>
+                            <div id="medical-reports-list">
+                                <p>Loading medical reports...</p>
+                            </div>
 
-</div>
+                        </div>
                     </section>
 
                     <section class="section">
@@ -567,7 +553,8 @@
             <aside class="profile">
                 <div class="profile-header">
                     <div class="avatar">
-                        <img src="{{ .patient.ProfilePhoto }}" alt="Profile Photo">
+                        <img src="{{ .patient.ProfilePhoto }}" alt="Profile Photo"
+                            onerror="this.src='/static/images/default-profile.png'">
                     </div>
 
                     <h3> {{ .patient.FirstName }} {{ .patient.LastName }}</h3>
@@ -594,17 +581,11 @@
                     <p>☏ <span>{{ .user.Phone }}</span> <b>●</b></p>
                 </div>
                 <div class="address-card">
-                    <h3>Address</h3>
-                    <small>PRESTIGE OCEAN APARTMENTS</small>
-                    <p>CALICUT<br>INDIA</p>
+                    <div id="addressSection"></div>
 
-                    <a href="/completeAddress.html" class="green-btn">
-                        ＋ Edit address
-                    </a>
                 </div>
 
-                <!-- <button class="add-address">＋ Add your address</button>
-          -->
+
             </aside>
         </section>
     </main>
@@ -617,7 +598,7 @@
         document.getElementById("scheduleAppointmentBtn").addEventListener("click", async function () {
 
             try {
-                const response = await fetch("/patient/profile/complete", {
+                const response = await fetch("/patient/completeProfile", {
                     method: "GET",
                     credentials: "include"
                 });
@@ -665,15 +646,22 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-
+            loadVitalData();
+            loadRecentAppointments();
+            loadRecentMedicalReports();
+            loadRecentPrescriptions();
+            loadAddress()
             const ageElement =
                 document.getElementById("patient-age");
 
-            const dob =
-                ageElement.dataset.dob;
+            if (dob) {
+                const age = calculateAge(dob);
 
-            ageElement.textContent =
-                calculateAge(dob) + " years";
+                ageElement.textContent =
+                    Number.isNaN(age) ? "-" : age + " years";
+            } else {
+                ageElement.textContent = "-";
+            }
 
         });
 
@@ -682,14 +670,6 @@
 
         let isSaving = false;
 
-        document.addEventListener("DOMContentLoaded", function () {
-
-            loadVitalData();
-            loadRecentAppointments();
-            loadRecentMedicalReports();
-            loadRecentPrescriptions();
-
-        });
         async function loadRecentPrescriptions() {
 
             const container =
@@ -817,9 +797,9 @@
             try {
 
                 const response = await fetch("/patient/files/recent", {
-    method: "GET",
-    credentials: "include"
-});
+                    method: "GET",
+                    credentials: "include"
+                });
 
                 if (response.status === 401) {
 
@@ -857,7 +837,53 @@
             }
         }
 
+        async function loadAddress() {
+            const addressSection = document.getElementById("addressSection");
 
+            try {
+                const response = await fetch("/patient/address", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to load address");
+                }
+
+                if (!data.exists || !data.address) {
+                    addressSection.innerHTML = `
+                <div class="no-address">
+                    <p>No address added yet.</p><a href="/patient/completeAddress"><button type="button" class="green-btn">Add Address</button></a>
+                </div>
+            `;
+
+                    return;
+                }
+
+                const address = data.address;
+
+                addressSection.innerHTML = `
+            <div class="address-details">
+                <p>${escapeHTML(address.address || "")}</p>
+                <p>${escapeHTML(address.place || "")}</p>
+                <p>${escapeHTML(address.country || "")}</p>
+<a href="/patient/completeAddress?edit=true"><button type="button" class="green-btn">Edit Address</button></a>
+            </div>
+        `;
+            
+
+            } catch (error) {
+                console.error("Error loading address:", error);
+
+                addressSection.innerHTML = `
+            <p>Unable to load address.</p>
+        `;
+            }
+        }
+
+        
         function displayMedicalReports(files) {
 
             const container =
@@ -1016,8 +1042,10 @@
             appointments.forEach(function (appointment) {
 
                 const row = document.createElement("tr");
-                const doctorName =
-                    `${appointment.doctor.first_name} ${appointment.doctor.last_name}`;
+                const doctorName = appointment.doctor
+                    ? `${appointment.doctor.first_name || ""} ${appointment.doctor.last_name || ""}`.trim()
+                    : "-";
+
                 row.innerHTML = `
             <td>
                 #${escapeHTML(String(appointment.appointment_id))}
@@ -1029,9 +1057,7 @@
 
             <td>
                 <b>
-                    ${escapeHTML(
-                    doctorName || "-"
-                )}
+                    ${escapeHTML(doctorName)}
                     
                 </b>
             </td>
@@ -1530,6 +1556,25 @@
 
         }
 
+
+        document.getElementById("medicalReportForm").addEventListener("submit", function (e) {
+
+            const fileInput = document.getElementById("medicalReportFile");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                e.preventDefault();
+                alert("Please select a medical report.");
+                return;
+            }
+
+            const maxSize = 10 * 1024 * 1024;
+
+            if (file.size > maxSize) {
+                e.preventDefault();
+                alert("File size must be less than 10 MB.");
+            }
+        });
     </script>
 </body>
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"medicity/database"
+
 	//"medicity/internal/dto"
 	"medicity/internal/models"
 	"time"
@@ -17,19 +18,21 @@ type PatientRepository interface {
 	EmailExists(email string) (bool, error)
 	PhoneExists(phone string) (bool, error)
 	IsProfileComplete(patientID uint) (bool, error)
-	GetPatientByID(PatientID,UserID uint)(*models.Patient, error)
-	CompleteProfileRequest(patientID uint,userID uint,dob time.Time,gender string,weight *float64,height *float64) error}
+	GetPatientByID(PatientID, UserID uint) (*models.Patient, error)
+	CompleteProfileRequest(patientID uint, userID uint, dob time.Time, gender string, weight *float64, height *float64) error
+	GetAddressByPatientID(patientID uint) (*models.Address, error)
+}
 
 type patientRepository struct{}
 
 func NewPatientRepository() PatientRepository {
 	return &patientRepository{}
 }
+
 // func (r *patientRepository) GetPatientMiniProfile(userID , patientId uint)(*dto.PatientMiniProfile,error){
 
-
 // }
-func (r *patientRepository) CompleteProfileRequest(patientID uint,userID uint,dob time.Time,gender string,weight *float64,height *float64) error {
+func (r *patientRepository) CompleteProfileRequest(patientID uint, userID uint, dob time.Time, gender string, weight *float64, height *float64) error {
 
 	updates := map[string]interface{}{
 		"dob":    dob,
@@ -108,15 +111,8 @@ func (r *patientRepository) FindByID(UserId uint) (*models.Patient, error) {
 	}
 	return &patient, nil
 }
-func (r *patientRepository) FindByPatientID(patientId uint) (*models.Patient, error) {
-	var patient models.Patient
-	err := database.DB.Where("patient_id = ?", patientId).First(&patient).Error
-	if err != nil {
-		return nil, err
-	}
-	return &patient, nil
-}
-func (r *patientRepository) GetPatientByID(patientID uint,userID uint) (*models.Patient, error) {
+
+func (r *patientRepository) GetPatientByID(patientID uint, userID uint) (*models.Patient, error) {
 
 	var patient models.Patient
 
@@ -154,4 +150,17 @@ func (r *patientRepository) IsProfileComplete(patientID uint) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (r *patientRepository) GetAddressByPatientID(patientID uint) (*models.Address, error) {
+	var address models.Address
+
+	err := database.DB.Where("patient_id = ?", patientID).
+		First(&address).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &address, nil
 }

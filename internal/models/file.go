@@ -9,7 +9,7 @@ const (
 	FileCategoryMedicalReport     FileCategory = "medical_report"
 	FileCategoryIdentityProof     FileCategory = "identity_proof"
 	FileCategoryProfilePhoto      FileCategory = "profile_photo"
-	FileCategoryOther             FileCategory = "other"
+	FileCategoryExperienceProof             FileCategory = "other"
 )
 
 type File struct {

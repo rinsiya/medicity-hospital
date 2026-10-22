@@ -1,13 +1,22 @@
 package service
 
 import (
+	"errors"
+	"medicity/internal/dto"
 	"medicity/internal/models"
 	"medicity/internal/repository"
+	
 )
 
 type DoctorService interface {
-	IsProfileComplete(doctorID uint) bool
-	GetDoctorByUserID(userID uint) *models.Doctor
+
+    IsProfileComplete(doctorID uint) bool
+
+    GetDoctorByUserID(userID uint) *models.Doctor
+
+    GetDoctorBasicProfile(userID uint) (*dto.DoctorBasicProfileResponse, error)
+
+    SubmitDoctorProfile(userID uint,input dto.DoctorProfileSubmission) error
 }
 
 type doctorService struct {
@@ -38,4 +47,28 @@ func (s *doctorService) GetDoctorByUserID(userID uint) *models.Doctor {
 	}
 
 	return doctor
+}
+func (s *doctorService) SubmitDoctorProfile(userID uint,input dto.DoctorProfileSubmission) error {
+
+    doctor, err := s.doctorRepo.GetDoctorByUserID(userID)
+
+    if err != nil {
+        return err
+    }
+
+    if doctor == nil {
+        return errors.New("doctor not found")
+    }
+
+    return s.doctorRepo.SubmitDoctorProfile(
+        doctor.DoctorID,
+        input,
+    )
+}
+
+func (s *doctorService) GetDoctorBasicProfile(
+    userID uint,
+) (*dto.DoctorBasicProfileResponse, error) {
+
+    return s.doctorRepo.GetDoctorBasicProfile(userID)
 }

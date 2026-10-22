@@ -58,9 +58,10 @@
                 </div>
 
                 <!-- Sign Out Button -->
+                 <a href="/doctor/logout">
                 <button class="btn-signout" id="signOutBtn">
                     Sign out
-                </button>
+                </button></a>
             </div>
         </div>
     </header>
@@ -454,5 +455,728 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="/static/script/script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    // Display messages returned during the previous submission
+    displaySubmissionMessages();
+
+    // Load all doctor profile information
+    await loadDoctorProfile();
+
+    // Load uploaded documents
+    await loadDoctorDocuments();
+
+    // Load qualifications and experiences
+    await loadDoctorQualifications();
+
+    await loadDoctorExperiences();
+
+    // Load profile photo
+    await loadDoctorProfilePhoto();
+});
+
+
+/* =========================================================
+   DISPLAY SUBMISSION MESSAGES
+   ========================================================= */
+
+function displaySubmissionMessages() {
+
+    const storedMessages =
+        sessionStorage.getItem("profileUpdateMessages");
+
+    if (!storedMessages) {
+        return;
+    }
+
+    try {
+
+        const messages = JSON.parse(storedMessages);
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return;
+        }
+
+        const banner = document.createElement("section");
+
+        banner.className = "submission-message-banner";
+
+        banner.innerHTML = `
+            <div class="message-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+
+            <div class="message-content">
+                <strong>Some items need your attention</strong>
+
+                <ul>
+                    ${messages.map(message => `
+                        <li>${escapeHtml(message)}</li>
+                    `).join("")}
+                </ul>
+
+                <small>
+                    Your successfully saved information is available below.
+                    You can edit or upload the missing items later.
+                </small>
+            </div>
+
+            <button
+                type="button"
+                class="message-close"
+                onclick="this.parentElement.remove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+
+        const dashboardContainer =
+            document.querySelector(".dashboard-container");
+
+        if (dashboardContainer) {
+            dashboardContainer.prepend(banner);
+        }
+
+        // Messages have now been displayed.
+        sessionStorage.removeItem("profileUpdateMessages");
+
+    } catch (error) {
+
+        console.error(
+            "Failed to display submission messages:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   LOAD BASIC DOCTOR PROFILE
+   ========================================================= */
+
+async function loadDoctorProfile() {
+
+    try {
+
+        const response = await fetch(
+            "/doctor/basicprofile",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to load doctor profile"
+            );
+        }
+
+        const doctor = data.profile;
+
+        document.getElementById("dispFullName").textContent =
+            doctor.name || "-";
+
+        document.getElementById("dispRole").textContent =
+            doctor.professional_role || "-";
+
+        document.getElementById("dispEmail").textContent =
+            doctor.email || "-";
+
+        document.getElementById("dispPhone").textContent =
+            doctor.phone || "-";
+
+        document.getElementById("dispDept").textContent =
+            doctor.department_name || "-";
+
+        document.getElementById("dispExp").textContent =
+            doctor.experience ?? "-";
+
+        document.getElementById("dispHospital").textContent =
+            doctor.hospital_address || "-";
+
+        document.getElementById("dispBio").textContent =
+            doctor.biography || "No biography added.";
+
+        // Public profile preview
+
+        document.getElementById("prevName").textContent =
+            doctor.name || "-";
+
+        document.getElementById("prevRole").textContent =
+            doctor.professional_role || "-";
+
+        // Edit form
+
+        const editFullName =
+            document.getElementById("editFullName");
+
+        const editRole =
+            document.getElementById("editRole");
+
+        const editEmail =
+            document.getElementById("editEmail");
+
+        const editPhone =
+            document.getElementById("editPhone");
+
+        const editDept =
+            document.getElementById("editDept");
+
+        const editExp =
+            document.getElementById("editExp");
+
+        const editHospital =
+            document.getElementById("editHospital");
+
+        if (editFullName)
+            editFullName.value = doctor.name || "";
+
+        if (editRole)
+            editRole.value = doctor.professional_role || "";
+
+        if (editEmail)
+            editEmail.value = doctor.email || "";
+
+        if (editPhone)
+            editPhone.value = doctor.phone || "";
+
+        if (editDept)
+            editDept.value = doctor.department_name || "";
+
+        if (editExp)
+            editExp.value = doctor.experience || "";
+
+        if (editHospital)
+            editHospital.value =
+                doctor.hospital_address || "";
+
+    } catch (error) {
+
+        console.error(
+            "Doctor profile loading error:",
+            error
+        );
+
+        showToast(
+            error.message ||
+            "Unable to load doctor profile.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   LOAD DOCUMENTS
+   ========================================================= */
+
+async function loadDoctorDocuments() {
+
+    try {
+
+        const response = await fetch(
+            "/doctor/documents",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to load documents"
+            );
+        }
+
+        renderDocuments(data.documents);
+
+    } catch (error) {
+
+        console.error(
+            "Document loading error:",
+            error
+        );
+
+        renderDocuments([]);
+    }
+}
+
+
+function renderDocuments(documents) {
+
+    const documentList =
+        document.getElementById("documentList");
+
+    if (!documentList) {
+        return;
+    }
+
+    documentList.innerHTML = "";
+
+    if (!documents || documents.length === 0) {
+
+        documentList.innerHTML = `
+            <li class="empty-state">
+                <i class="fa-regular fa-folder-open"></i>
+                <span>No documents uploaded yet.</span>
+            </li>
+        `;
+
+        return;
+    }
+
+    documents.forEach(documentItem => {
+
+        const li =
+            document.createElement("li");
+
+        li.className = "document-item";
+
+        const fileName =
+            documentItem.file_name ||
+            documentItem.filename ||
+            "Document";
+
+        const category =
+            documentItem.category || "";
+
+        const remarks =
+            documentItem.remarks || "";
+
+        const fileURL =
+            documentItem.secure_url ||
+            documentItem.url ||
+            "#";
+
+        li.innerHTML = `
+            <div class="doc-info">
+
+                <i class="fa-solid fa-file-medical doc-icon"></i>
+
+                <div>
+                    <span
+                        class="doc-name"
+                        title="${escapeHtml(fileName)}">
+                        ${escapeHtml(fileName)}
+                    </span>
+
+                    <small>
+                        ${escapeHtml(formatDocumentCategory(category))}
+                        ${remarks
+                            ? " - " + escapeHtml(remarks)
+                            : ""}
+                    </small>
+                </div>
+
+            </div>
+
+            <div class="doc-actions">
+
+                <button
+                    class="btn-action download"
+                    title="View Document"
+                    onclick="window.open('${escapeHtml(fileURL)}', '_blank')">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                </button>
+
+                <button
+                    class="btn-action remove"
+                    title="Remove Document"
+                    onclick="removeDoctorDocument(${documentItem.file_id})">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+        `;
+
+        documentList.appendChild(li);
+    });
+}
+
+
+function formatDocumentCategory(category) {
+
+    switch (category) {
+
+        case "doctor_certificate":
+            return "Medical Certificate";
+
+        case "identity_proof":
+            return "Identity Proof";
+
+        case "experience_proof":
+            return "Proof of Experience";
+
+        case "profile_photo":
+            return "Profile Photo";
+
+        default:
+            return category || "Document";
+    }
+}
+
+
+/* =========================================================
+   LOAD QUALIFICATIONS
+   ========================================================= */
+
+async function loadDoctorQualifications() {
+
+    try {
+
+        const response = await fetch(
+            "/doctor/qualifications",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to load qualifications"
+            );
+        }
+
+        renderQualifications(data.qualifications);
+
+    } catch (error) {
+
+        console.error(
+            "Qualification loading error:",
+            error
+        );
+
+        renderQualifications([]);
+    }
+}
+
+
+function renderQualifications(qualifications) {
+
+    const list =
+        document.querySelector(".qualification-list");
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    if (!qualifications || qualifications.length === 0) {
+
+        list.innerHTML = `
+            <li class="empty-state">
+                No qualifications added yet.
+            </li>
+        `;
+
+        return;
+    }
+
+    qualifications.forEach((qualification, index) => {
+
+        const li =
+            document.createElement("li");
+
+        li.className = "qual-item";
+
+        li.innerHTML = `
+            <div class="qual-badge">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <div class="qual-details">
+
+                <strong>
+                    ${escapeHtml(qualification.qualification)}
+                    ${qualification.specialisation
+                        ? " in " +
+                          escapeHtml(
+                              qualification.specialisation
+                          )
+                        : ""}
+                </strong>
+
+                <span>
+                    ${escapeHtml(qualification.university || "")}
+                    ${qualification.year
+                        ? " | " + qualification.year
+                        : ""}
+                </span>
+
+            </div>
+
+            <button
+                class="btn-action edit"
+                title="Edit Qualification"
+                onclick="editQualification(${index})">
+
+                <i class="fa-solid fa-pen"></i>
+
+            </button>
+        `;
+
+        list.appendChild(li);
+    });
+}
+
+
+/* =========================================================
+   LOAD PROFESSIONAL EXPERIENCE
+   ========================================================= */
+
+async function loadDoctorExperiences() {
+
+    try {
+
+        const response = await fetch(
+            "/doctor/experiences",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to load experience"
+            );
+        }
+
+        renderExperiences(data.experiences);
+
+    } catch (error) {
+
+        console.error(
+            "Experience loading error:",
+            error
+        );
+
+        renderExperiences([]);
+    }
+}
+
+
+function renderExperiences(experiences) {
+
+    const list =
+        document.getElementById("experienceList");
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    if (!experiences || experiences.length === 0) {
+
+        list.innerHTML = `
+            <li class="empty-state">
+                No professional experience added yet.
+            </li>
+        `;
+
+        return;
+    }
+
+    experiences.forEach((experience, index) => {
+
+        const li =
+            document.createElement("li");
+
+        li.className = "exp-item";
+
+        li.innerHTML = `
+            <div class="exp-info">
+
+                <strong class="exp-role">
+                    ${escapeHtml(
+                        experience.role ||
+                        experience.experience ||
+                        ""
+                    )}
+                </strong>
+
+                <span class="exp-period">
+                    ${escapeHtml(
+                        experience.period ||
+                        experience.details ||
+                        ""
+                    )}
+                </span>
+
+            </div>
+
+            <button
+                class="btn-remove-exp"
+                title="Edit Experience"
+                onclick="editExperience(${index})">
+
+                <i class="fa-solid fa-pen"></i>
+
+            </button>
+        `;
+
+        list.appendChild(li);
+    });
+}
+
+
+/* =========================================================
+   LOAD PROFILE PHOTO
+   ========================================================= */
+
+async function loadDoctorProfilePhoto() {
+
+    try {
+
+        const response = await fetch(
+            "/doctor/profile-photo",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return;
+        }
+
+        if (data.photo && data.photo.secure_url) {
+
+            document.getElementById(
+                "profileAvatarImg"
+            ).src = data.photo.secure_url;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Profile photo loading error:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   DELETE DOCUMENT
+   ========================================================= */
+
+async function removeDoctorDocument(fileID) {
+
+    if (!fileID) {
+        return;
+    }
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to remove this document?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/doctor/documents/${fileID}`,
+            {
+                method: "DELETE",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to remove document"
+            );
+        }
+
+        await loadDoctorDocuments();
+
+        showToast(
+            "Document removed successfully.",
+            "success"
+        );
+
+    } catch (error) {
+
+        showToast(
+            error.message ||
+            "Failed to remove document.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    const div = document.createElement("div");
+
+    div.textContent = String(value);
+
+    return div.innerHTML;
+}
+
+
+function showToast(message, type = "success") {
+
+    const container =
+        document.getElementById("toastContainer");
+
+    if (!container) {
+        return;
+    }
+
+    const toast =
+        document.createElement("div");
+
+    toast.className =
+        `toast ${type}`;
+
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+}
+
+</script>
 </body>
 </html>

@@ -21,9 +21,6 @@ func NewOTPServicePro(apiKey string) OTPServicePro {
     }
 }
 
-
-
-
 type otpResponsePro struct {
     Status  string `json:"Status"`
     Details string `json:"Details"`
