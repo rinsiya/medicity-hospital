@@ -319,7 +319,7 @@
                 your date of birth and gender.
             </p>
 
-    <form action="/patient/complete-profile" method="POST" enctype="multipart/form-data" id="patientProfileForm">
+    <form action="/patient/completeProfile" method="POST" enctype="multipart/form-data" id="patientProfileForm">
                 <div class="form-group">
                     <label for="dob">Date of Birth</label>
                     <div class="input-wrapper">
@@ -382,7 +382,7 @@
 
             try {
 
-                const response = await fetch("/patient/complete-profile", {
+                const response = await fetch("/patient/completeProfile", {
                     method: "POST",
                     body: formData
                 });

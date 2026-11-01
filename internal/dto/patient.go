@@ -2,14 +2,14 @@ package dto
 
 import "time"
 
-type PatientMiniProfile struct{
-PatientID      uint `json:"patient_id"` 
-PatientName    string `json:"patient_name"`
-ProfilePhoto   string `json:"profile_photo"`
+type PatientMiniProfile struct {
+	PatientID    uint   `json:"patient_id"`
+	PatientName  string `json:"patient_name"`
+	ProfilePhoto string `json:"profile_photo"`
 }
 
 type PatientProfile struct {
-	
+	PatientID   uint   `json:"patient_id"`
 	PatientName string `json:"patient_name"`
 
 	Gender string `json:"gender"`
@@ -18,8 +18,6 @@ type PatientProfile struct {
 
 	Height float32 `json:"height"`
 
-	Weight float32 `json:"weight"`
-ProfilePhoto   string `json:"profile_photo"`
-
-
+	Weight       float32 `json:"weight"`
+	ProfilePhoto string  `json:"profile_photo"`
 }

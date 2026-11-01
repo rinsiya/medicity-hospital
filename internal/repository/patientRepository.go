@@ -114,7 +114,7 @@ func (r *patientRepository) FindByID(UserId uint) (*models.Patient, error) {
 
 func (r *patientRepository) GetPatientByID(patientID uint, userID uint) (*models.Patient, error) {
 
-	var patient models.Patient
+	var patient *models.Patient
 
 	err := database.DB.
 		Where(
@@ -128,7 +128,7 @@ func (r *patientRepository) GetPatientByID(patientID uint, userID uint) (*models
 		return nil, err
 	}
 
-	return &patient, nil
+	return patient, nil
 }
 func (r *patientRepository) IsProfileComplete(patientID uint) (bool, error) {
 

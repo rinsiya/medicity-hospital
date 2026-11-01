@@ -14,15 +14,7 @@ var DB *gorm.DB
 
 func ConnectDatabase(config *config.Config) {
 
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		config.DBHost,
-		config.DBUser,
-		config.DBPassword,
-		config.DBName,
-		config.DBPort,
-		config.DBSSLMode,
-	)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.DBHost, config.DBUser, config.DBPassword, config.DBName, config.DBPort, config.DBSSLMode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,

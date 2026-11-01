@@ -19,7 +19,7 @@ type FileRepository interface {
 		pageSize int,
 	) ([]dto.PatientFiles, int64, error)
 
-	GetProfilePhotoByUserID(userID uint) (*models.File, error)
+	GetProfilePhotoByUserID(userID uint) *models.File
 }
 
 type fileRepository struct{}
@@ -29,7 +29,7 @@ func NewFileRepository() FileRepository {
 }
 func (r *fileRepository) GetProfilePhotoByUserID(
 	userID uint,
-) (*models.File, error) {
+) *models.File {
 
 	var file models.File
 
@@ -43,10 +43,10 @@ func (r *fileRepository) GetProfilePhotoByUserID(
 		First(&file).Error
 
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return &file, nil
+	return &file
 }
 func (r *fileRepository) GetRecentFilesByUserID(
 	userID uint,

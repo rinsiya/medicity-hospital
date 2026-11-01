@@ -178,7 +178,7 @@ a {
 }
 
 .section-heading h2 {
-    font-size: 9px;
+    font-size: 12px;
     color: #285a46;
     font-weight: 600;
 }
@@ -502,7 +502,7 @@ td b {
 }
 
 .profile-block h4 {
-    font-size: 6px;
+    font-size: 9px;
     color: #8a908e;
     font-weight: normal;
     margin-bottom: 8px;
@@ -512,7 +512,7 @@ dl {
     display: grid;
     grid-template-columns: 1fr 1fr;
     row-gap: 8px;
-    font-size: 6.5px;
+    font-size: 10px;
 }
 
 dt {
@@ -529,14 +529,14 @@ dd {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 7px;
+    font-size: 9px;
     margin: 7px 0;
 }
 
 .contact p b {
     margin-left: auto;
     color: #087040;
-    font-size: 7px;
+    font-size: 9px;
 }
 
 .address-card {

@@ -111,22 +111,20 @@ func (s *patientService) GetPatientByID(patientID, userID uint) (*dto.PatientPro
 	}
 	profile := &dto.PatientProfile{
 		PatientName:  patient.FirstName + " " + patient.LastName,
+		PatientID:    patient.PatientID,
 		Gender:       patient.Gender,
 		DOB:          patient.DOB,
 		Height:       patient.Height,
 		Weight:       patient.Weight,
 		ProfilePhoto: "",
 	}
-	file, err := s.fileRepo.GetProfilePhotoByUserID(userID)
 
-	if err == nil && file != nil {
+	file := s.fileRepo.GetProfilePhotoByUserID(userID)
+
+	if file != nil {
 		profile.ProfilePhoto = file.SecureURL
-
-		return profile, nil
-	} else {
-		return nil, err
 	}
-
+	return profile, nil
 }
 
 func (s *patientService) FindByID(patientID uint) (*models.Patient, error) {

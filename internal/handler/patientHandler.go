@@ -66,7 +66,7 @@ func (h *patientHandler) ChangePassword(c *gin.Context) {
 }
 
 func (h *patientHandler) CompleteProfile(c *gin.Context) {
-	c.HTML(http.StatusOK, "complete-profile.html", nil)
+	c.HTML(http.StatusOK, "completeProfile.html", nil)
 }
 
 func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
@@ -214,11 +214,20 @@ func (h *patientHandler) CompleteProfileRequest(c *gin.Context) {
 }
 
 func (h *patientHandler) CheckProfileComplete(c *gin.Context) {
-
 	patientID := c.GetUint("RoleID")
-	complete, err := h.patientService.IsProfileComplete(patientID)
 
+	logger.Log.Info(
+		"checking patient profile completion",
+		zap.Uint("patient_id", patientID),
+	)
+
+	complete, err := h.patientService.IsProfileComplete(patientID)
 	if err != nil {
+		logger.Log.Error("failed to check patient profile",
+			zap.Uint("patient_id", patientID),
+			zap.Error(err),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to check profile",
@@ -227,18 +236,31 @@ func (h *patientHandler) CheckProfileComplete(c *gin.Context) {
 	}
 
 	if !complete {
+		logger.Log.Info(
+			"patient profile is incomplete",
+			zap.Uint("patient_id", patientID),
+		)
+
 		c.JSON(http.StatusOK, gin.H{
 			"success":  true,
-			"redirect": "/patient/complete-profile",
+			"message":  "profile is incomplete",
+			"redirect": "/patient/completeProfile",
 		})
 		return
 	}
 
+	logger.Log.Info(
+		"patient profile is complete",
+		zap.Uint("patient_id", patientID),
+	)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
-		"redirect": "/patient/schedule-appointment",
+		"message":  "profile is complete",
+		"redirect": "/patient/scheduleAppointment",
 	})
 }
+
 func (h *patientHandler) Home(c *gin.Context) {
 
 	logger.Log.Info(
@@ -283,9 +305,9 @@ func (h *patientHandler) Home(c *gin.Context) {
 		logger.Log.Warn(
 			"Invalid patient ID in authentication context",
 			zap.Uint("userID", userID),
-			zap.String("role", "patient"),  
+			zap.String("role", "patient"),
 		)
-  
+
 		c.HTML(http.StatusUnauthorized, "patientLogin.html", gin.H{
 			"success": false,
 			"error":   "Patient not authenticated",
@@ -314,15 +336,16 @@ func (h *patientHandler) Home(c *gin.Context) {
 		)
 
 		if errors.Is(err, service.ErrUserNotFound) {
-
-			c.JSON(http.StatusNotFound, gin.H{
+			c.HTML(http.StatusUnauthorized, "patientLogin.html", gin.H{
 				"success": false,
-				"message": "Patient not found",
+				"error":   "User not found",
 			})
-			return
+
 		}
 
-		c.HTML(http.StatusInternalServerError, "patient-home.html", gin.H{
+		c.HTML(http.StatusInternalServerError, "patientLogin.html", gin.H{
+			"success": false,
+
 			"error": "Internal server error",
 		})
 		return
@@ -330,12 +353,12 @@ func (h *patientHandler) Home(c *gin.Context) {
 
 	logger.Log.Info(
 		"Patient details loaded successfully",
-		zap.String("role", "patient"),
+		zap.String("role", patient.PatientName),
 		zap.Uint("userID", userID),
 		zap.Uint("patientID", patientID),
 	)
 
- 	// Get user details
+	// Get user details
 	user, err := h.Service.GetUserByID(userID)
 
 	if err != nil {
@@ -347,15 +370,6 @@ func (h *patientHandler) Home(c *gin.Context) {
 			zap.Uint("patientID", patientID),
 			zap.Error(err),
 		)
-
-		if errors.Is(err, service.ErrUserNotFound) {
-
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": "User not found",
-			})
-			return
-		}
 
 		c.HTML(http.StatusInternalServerError, "patient-home.html", gin.H{
 			"error": "Internal server error",
@@ -372,7 +386,7 @@ func (h *patientHandler) Home(c *gin.Context) {
 
 	logger.Log.Info(
 		"Patient home loaded successfully",
-		zap.String("role", "patient"),
+		zap.Time("role", patient.DOB),
 		zap.Uint("userID", userID),
 		zap.Uint("patientID", patientID),
 	)
