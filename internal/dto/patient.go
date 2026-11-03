@@ -9,10 +9,10 @@ type PatientMiniProfile struct {
 }
 
 type PatientProfile struct {
-	PatientID   uint   `json:"patient_id"`
-	PatientName string `json:"patient_name"`
-
-	Gender string `json:"gender"`
+	PatientID         uint   `json:"patient_id"`
+	PatientName       string `json:"patient_name"`
+	IsProfileComplete bool   `json:"is_profile_complete"`
+	Gender            string `json:"gender"`
 
 	DOB time.Time `json:"dob"`
 

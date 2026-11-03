@@ -591,1024 +591,992 @@
         © 2026 MediCity Hospital. All Rights Reserved.
     </footer>
     <script>
-       document.addEventListener("DOMContentLoaded", function () {
-            loadVitalData();
-            loadRecentAppointments();
-            loadRecentMedicalReports();
-            loadRecentPrescriptions();
-            loadAddress()
+//        document.addEventListener("DOMContentLoaded", function () {
+//             loadVitalData();
+//             loadRecentAppointments();
+//             loadRecentMedicalReports();
+//             loadRecentPrescriptions();
+//             loadAddress()
 
-            const ageElement =
-                document.getElementById("patient-age");
-const dob = ageElement?.dataset.dob;
-            if (dob) {
-                const age = calculateAge(dob);
+//             const ageElement =
+//                 document.getElementById("patient-age");
+// const dob = ageElement?.dataset.dob;
+//             if (dob) {
+//                 const age = calculateAge(dob);
 
-                ageElement.textContent =
-                    Number.isNaN(age) ? "-" : age + " years";
-            } else {
-                ageElement.textContent = "-";
-            }
+//                 ageElement.textContent =
+//                     Number.isNaN(age) ? "-" : age + " years";
+//             } else {
+//                 ageElement.textContent = "-";
+//             }
 
-        });
-document.getElementById("scheduleAppointmentBtn").addEventListener("click", async function() {
+//         });
+// document.getElementById("scheduleAppointmentBtn").addEventListener("click", async function() {
 
-console.log("response.status");
+// console.log("response.status");
 
-    try {
-      const response = await fetch("/patient/isProfileComplete", {
-        method: "GET",
-        credentials: "include",
-      });
+//     try {
+//       const response = await fetch("/patient/isProfileComplete", {
+//         method: "GET",
+//         credentials: "include",
+//       });
 
- const data = await response.json();
+//  const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        alert(data.message || "Failed to check profile.");
-        return;
-      }
+//       if (!response.ok || !data.success) {
+//         alert(data.message || "Failed to check profile.");
+//         return;
+//       }
 
-      window.location.href = data.redirect;
-    } catch (error) {
-      console.error("Error checking profile:", error);
-      alert("Something went wrong. Please try again.");
-    }
+//       window.location.href = data.redirect;
+//     } catch (error) {
+//       console.error("Error checking profile:", error);
+//       alert("Something went wrong. Please try again.");
+//     }
     
-  });
+//   });
 
-        function calculateAge(dob) {
+//         function calculateAge(dob) {
 
-            const birthDate = new Date(dob);
-            const today = new Date();
+//             const birthDate = new Date(dob);
+//             const today = new Date();
 
-            let age = today.getFullYear() - birthDate.getFullYear();
+//             let age = today.getFullYear() - birthDate.getFullYear();
 
-            const monthDifference =
-                today.getMonth() - birthDate.getMonth();
+//             const monthDifference =
+//                 today.getMonth() - birthDate.getMonth();
 
-            if (
-                monthDifference < 0 ||
-                (
-                    monthDifference === 0 &&
-                    today.getDate() < birthDate.getDate()
-                )
-            ) {
-                age--;
-            }
+//             if (
+//                 monthDifference < 0 ||
+//                 (
+//                     monthDifference === 0 &&
+//                     today.getDate() < birthDate.getDate()
+//                 )
+//             ) {
+//                 age--;
+//             }
 
-            return age;
-        }
+//             return age;
+//         }
 
  
 
 
-        let newVitals = [];
+//         let newVitals = [];
 
-        let isSaving = false;
+//         let isSaving = false;
 
-        async function loadRecentPrescriptions() {
+//         async function loadRecentPrescriptions() {
 
-            const container =
-                document.getElementById("recent-prescriptions-list");
+//             const container =
+//                 document.getElementById("recent-prescriptions-list");
 
-            if (!container) {
-                return;
-            }
+//             if (!container) {
+//                 return;
+//             }
 
-            try {
+//             try {
 
-                const response = await fetch(
-                    "/patient/prescriptions/recent",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
+//                 const response = await fetch(
+//                     "/patient/prescriptions/recent",
+//                     {
+//                         method: "GET",
+//                         credentials: "include"
+//                     }
+//                 );
 
-                if (response.status === 401) {
+//                 if (response.status === 401) {
 
-                    console.log("Patient is not authenticated.");
+//                     console.log("Patient is not authenticated.");
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const result = await response.json();
+//                 const result = await response.json();
 
-                if (!response.ok) {
+//                 if (!response.ok) {
 
-                    console.error(
-                        result.message ||
-                        "Failed to load prescriptions."
-                    );
+//                     console.error(
+//                         result.message ||
+//                         "Failed to load prescriptions."
+//                     );
 
-                    showNoPrescriptions();
+//                     showNoPrescriptions();
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const prescriptions = result.data || [];
+//                 const prescriptions = result.data || [];
 
-                displayRecentPrescriptions(prescriptions);
+//                 displayRecentPrescriptions(prescriptions);
 
-            } catch (error) {
+//             } catch (error) {
 
-                console.error(
-                    "Error loading prescriptions:",
-                    error
-                );
+//                 console.error(
+//                     "Error loading prescriptions:",
+//                     error
+//                 );
 
-                showNoPrescriptions();
-            }
-        }
+//                 showNoPrescriptions();
+//             }
+//         }
 
-        function displayRecentPrescriptions(prescriptions) {
+//         function displayRecentPrescriptions(prescriptions) {
 
-            const container =
-                document.getElementById("recent-prescriptions-list");
+//             const container =
+//                 document.getElementById("recent-prescriptions-list");
 
-            if (!container) {
-                return;
-            }
+//             if (!container) {
+//                 return;
+//             }
 
-            if (
-                !prescriptions ||
-                !Array.isArray(prescriptions) ||
-                prescriptions.length === 0
-            ) {
+//             if (
+//                 !prescriptions ||
+//                 !Array.isArray(prescriptions) ||
+//                 prescriptions.length === 0
+//             ) {
 
-                showNoPrescriptions();
+//                 showNoPrescriptions();
 
-                return;
-            }
+//                 return;
+//             }
 
-            container.innerHTML = "";
+//             container.innerHTML = "";
 
-            prescriptions.forEach(function (prescription) {
+//             prescriptions.forEach(function (prescription) {
 
-                const row =
-                    document.createElement("div");
+//                 const row =
+//                     document.createElement("div");
 
-                row.className = "prescription-row";
+//                 row.className = "prescription-row";
 
-                row.innerHTML = `
-            <span>
-                ${formatDate(prescription.created_at)}
-            </span>
+//                 row.innerHTML = `
+//             <span>
+//                 ${formatDate(prescription.created_at)}
+//             </span>
 
-            <div>
-                <b>
-                    ${escapeHTML(prescription.doctor_name)}
-                </b>
-                  <small>
-        ${escapeHTML(prescription.professional_role || "")}
-    </small>
-            </div>
-        `;
+//             <div>
+//                 <b>
+//                     ${escapeHTML(prescription.doctor_name)}
+//                 </b>
+//                   <small>
+//         ${escapeHTML(prescription.professional_role || "")}
+//     </small>
+//             </div>
+//         `;
 
-                container.appendChild(row);
+//                 container.appendChild(row);
 
-            });
-        }
-        function showNoPrescriptions() {
+//             });
+//         }
+//         function showNoPrescriptions() {
 
-            const container =
-                document.getElementById("recent-prescriptions-list");
+//             const container =
+//                 document.getElementById("recent-prescriptions-list");
 
-            if (!container) {
-                return;
-            }
+//             if (!container) {
+//                 return;
+//             }
 
-            container.innerHTML = `
-        <p style="text-align: center;">
-            No prescriptions found.
-        </p>
-    `;
-        }
+//             container.innerHTML = `
+//         <p style="text-align: center;">
+//             No prescriptions found.
+//         </p>
+//     `;
+//         }
 
-        async function loadRecentMedicalReports() {
+//         async function loadRecentMedicalReports() {
 
-            const container =
-                document.getElementById("medical-reports-list");
+//             const container =
+//                 document.getElementById("medical-reports-list");
 
-            try {
+//             try {
 
-                const response = await fetch("/patient/files/recent", {
-                    method: "GET",
-                    credentials: "include"
-                });
+//                 const response = await fetch("/patient/files/recent", {
+//                     method: "GET",
+//                     credentials: "include"
+//                 });
 
-                if (response.status === 401) {
+//                 if (response.status === 401) {
 
-                    console.log("Patient is not authenticated.");
+//                     console.log("Patient is not authenticated.");
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const result = await response.json();
+//                 const result = await response.json();
 
-                if (!response.ok) {
+//                 if (!response.ok) {
 
-                    console.error(
-                        result.message ||
-                        "Failed to load medical reports."
-                    );
+//                     console.error(
+//                         result.message ||
+//                         "Failed to load medical reports."
+//                     );
 
-                    showNoMedicalReports();
+//                     showNoMedicalReports();
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const files = result.data || [];
+//                 const files = result.data || [];
 
-                displayMedicalReports(files);
+//                 displayMedicalReports(files);
 
-            } catch (error) {
+//             } catch (error) {
 
-                console.error(
-                    "Error loading medical reports:",
-                    error
-                );
+//                 console.error(
+//                     "Error loading medical reports:",
+//                     error
+//                 );
 
-                showNoMedicalReports();
-            }
-        }
+//                 showNoMedicalReports();
+//             }
+//         }
 
-        async function loadAddress() {
-            const addressSection = document.getElementById("addressSection");
+//         async function loadAddress() {
+//             const addressSection = document.getElementById("addressSection");
 
-            try {
-                const response = await fetch("/patient/address", {
-                    method: "GET",
-                    credentials: "include"
-                });
+//             try {
+//                 const response = await fetch("/patient/address", {
+//                     method: "GET",
+//                     credentials: "include"
+//                 });
 
-                const data = await response.json();
+//                 const data = await response.json();
 
-                if (!response.ok || !data.success) {
-                    throw new Error(data.message || "Failed to load address");
-                }
+//                 if (!response.ok || !data.success) {
+//                     throw new Error(data.message || "Failed to load address");
+//                 }
 
-                if (!data.exists || !data.address) {
-                    addressSection.innerHTML = `
-                <div class="no-address">
-                    <p>No address added yet.</p><a href="/patient/completeAddress"><button type="button" class="green-btn">Add Address</button></a>
-                </div>
-            `;
+//                 if (!data.exists || !data.address) {
+//                     addressSection.innerHTML = `
+//                 <div class="no-address">
+//                     <p>No address added yet.</p><a href="/patient/completeAddress"><button type="button" class="green-btn">Add Address</button></a>
+//                 </div>
+//             `;
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const address = data.address;
+//                 const address = data.address;
 
-                addressSection.innerHTML = `
-            <div class="address-details">
-                <p>${escapeHTML(address.address || "")}</p>
-                <p>${escapeHTML(address.place || "")}</p>
-                <p>${escapeHTML(address.country || "")}</p>
-<a href="/patient/completeAddress?edit=true"><button type="button" class="green-btn">Edit Address</button></a>
-            </div>
-        `;
+//                 addressSection.innerHTML = `
+//             <div class="address-details">
+//                 <p>${escapeHTML(address.address || "")}</p>
+//                 <p>${escapeHTML(address.place || "")}</p>
+//                 <p>${escapeHTML(address.country || "")}</p>
+// <a href="/patient/completeAddress?edit=true"><button type="button" class="green-btn">Edit Address</button></a>
+//             </div>
+//         `;
             
 
-            } catch (error) {
-                console.error("Error loading address:", error);
+//             } catch (error) {
+//                 console.error("Error loading address:", error);
 
-                addressSection.innerHTML = `
-            <p>Unable to load address.</p>
-        `;
-            }
-        }
+//                 addressSection.innerHTML = `
+//             <p>Unable to load address.</p>
+//         `;
+//             }
+//         }
 
         
-        function displayMedicalReports(files) {
+//         function displayMedicalReports(files) {
 
-            const container =
-                document.getElementById("medical-reports-list");
+//             const container =
+//                 document.getElementById("medical-reports-list");
 
-            if (!container) {
-                return;
-            }
+//             if (!container) {
+//                 return;
+//             }
 
-            if (!files || files.length === 0) {
+//             if (!files || files.length === 0) {
 
-                showNoMedicalReports();
+//                 showNoMedicalReports();
 
-                return;
-            }
+//                 return;
+//             }
 
-            container.innerHTML = "";
+//             container.innerHTML = "";
 
-            files.forEach(function (file) {
+//             files.forEach(function (file) {
 
-                const item =
-                    document.createElement("div");
+//                 const item =
+//                     document.createElement("div");
 
-                item.className =
-                    "file " + getFileClass(file.file_type);
+//                 item.className =
+//                     "file " + getFileClass(file.file_type);
 
-                item.innerHTML = `
-            <span>▤</span>
+//                 item.innerHTML = `
+//             <span>▤</span>
 
-            <div>
-                <b>${escapeHTML(file.file_name)}</b>
+//             <div>
+//                 <b>${escapeHTML(file.file_name)}</b>
 
-                <small>
-                    ${escapeHTML(file.category)}
-                    · ${formatDate(file.uploaded_at)}
-                </small>
-            </div>
-        `;
+//                 <small>
+//                     ${escapeHTML(file.category)}
+//                     · ${formatDate(file.uploaded_at)}
+//                 </small>
+//             </div>
+//         `;
 
-                container.appendChild(item);
+//                 container.appendChild(item);
 
-            });
-        }
+//             });
+//         }
 
-        function showNoMedicalReports() {
+//         function showNoMedicalReports() {
 
-            const container =
-                document.getElementById("medical-reports-list");
+//             const container =
+//                 document.getElementById("medical-reports-list");
 
-            if (!container) {
-                return;
-            }
+//             if (!container) {
+//                 return;
+//             }
 
-            container.innerHTML = `
-        <p style="text-align:center;">
-            No medical reports found.
-        </p>
-    `;
-        }
+//             container.innerHTML = `
+//         <p style="text-align:center;">
+//             No medical reports found.
+//         </p>
+//     `;
+//         }
 
-        function getFileClass(fileType) {
+//         function getFileClass(fileType) {
 
-            if (!fileType) {
-                return "blue";
-            }
+//             if (!fileType) {
+//                 return "blue";
+//             }
 
-            fileType = fileType.toLowerCase();
+//             fileType = fileType.toLowerCase();
 
-            if (fileType.includes("pdf")) {
-                return "red";
-            }
+//             if (fileType.includes("pdf")) {
+//                 return "red";
+//             }
 
-            if (
-                fileType.includes("jpg") ||
-                fileType.includes("jpeg") ||
-                fileType.includes("png")
-            ) {
-                return "blue";
-            }
+//             if (
+//                 fileType.includes("jpg") ||
+//                 fileType.includes("jpeg") ||
+//                 fileType.includes("png")
+//             ) {
+//                 return "blue";
+//             }
 
-            return "green";
-        }
+//             return "green";
+//         }
 
-        async function loadRecentAppointments() {
+//         async function loadRecentAppointments() {
 
-            const tbody =
-                document.getElementById("recent-appointments-body");
+//             const tbody =
+//                 document.getElementById("recent-appointments-body");
 
-            try {
+//             try {
 
-                const response = await fetch(
-                    "/patient/appointments/recent",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
+//                 const response = await fetch(
+//                     "/patient/appointments/recent",
+//                     {
+//                         method: "GET",
+//                         credentials: "include"
+//                     }
+//                 );
 
-                if (response.status === 401) {
+//                 if (response.status === 401) {
 
-                    console.log("Patient is not authenticated.");
+//                     console.log("Patient is not authenticated.");
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const result = await response.json();
+//                 const result = await response.json();
 
-                if (!response.ok) {
+//                 if (!response.ok) {
 
-                    console.error(
-                        result.message ||
-                        "Failed to load appointments."
-                    );
+//                     console.error(
+//                         result.message ||
+//                         "Failed to load appointments."
+//                     );
 
-                    showNoAppointments();
+//                     showNoAppointments();
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const appointments = result.data || [];
+//                 const appointments = result.data || [];
 
-                displayRecentAppointments(appointments);
+//                 displayRecentAppointments(appointments);
 
-            } catch (error) {
+//             } catch (error) {
 
-                console.error(
-                    "Error loading appointments:",
-                    error
-                );
+//                 console.error(
+//                     "Error loading appointments:",
+//                     error
+//                 );
 
-                showNoAppointments();
-            }
-        }
-        function displayRecentAppointments(appointments) {
+//                 showNoAppointments();
+//             }
+//         }
+//         function displayRecentAppointments(appointments) {
 
-            const tbody =
-                document.getElementById("recent-appointments-body");
+//             const tbody =
+//                 document.getElementById("recent-appointments-body");
 
-            if (!tbody) {
-                return;
-            }
+//             if (!tbody) {
+//                 return;
+//             }
 
-            if (
-                !appointments ||
-                !Array.isArray(appointments) ||
-                appointments.length === 0
-            ) {
+//             if (
+//                 !appointments ||
+//                 !Array.isArray(appointments) ||
+//                 appointments.length === 0
+//             ) {
 
-                showNoAppointments();
+//                 showNoAppointments();
 
-                return;
-            }
+//                 return;
+//             }
 
-            tbody.innerHTML = "";
+//             tbody.innerHTML = "";
 
-            appointments.forEach(function (appointment) {
+//             appointments.forEach(function (appointment) {
 
-                const row = document.createElement("tr");
-                const doctorName = appointment.doctor
-                    ? `${appointment.doctor.first_name || ""} ${appointment.doctor.last_name || ""}`.trim()
-                    : "-";
+//                 const row = document.createElement("tr");
+//                 const doctorName = appointment.doctor
+//                     ? `${appointment.doctor.first_name || ""} ${appointment.doctor.last_name || ""}`.trim()
+//                     : "-";
 
-                row.innerHTML = `
-            <td>
-                #${escapeHTML(String(appointment.appointment_id))}
-            </td>
+//                 row.innerHTML = `
+//             <td>
+//                 #${escapeHTML(String(appointment.appointment_id))}
+//             </td>
 
-            <td>
-                ${formatDate(appointment.appointment_date)}
-            </td>
+//             <td>
+//                 ${formatDate(appointment.appointment_date)}
+//             </td>
 
-            <td>
-                <b>
-                    ${escapeHTML(doctorName)}
+//             <td>
+//                 <b>
+//                     ${escapeHTML(doctorName)}
                     
-                </b>
-            </td>
+//                 </b>
+//             </td>
 
-            <td>
-                <span class="status ${getStatusClass(appointment.status)}">
-                    ${escapeHTML(appointment.status || "-")}
-                </span>
-            </td>
-        `;
+//             <td>
+//                 <span class="status ${getStatusClass(appointment.status)}">
+//                     ${escapeHTML(appointment.status || "-")}
+//                 </span>
+//             </td>
+//         `;
 
-                tbody.appendChild(row);
+//                 tbody.appendChild(row);
 
-            });
-        }
+//             });
+//         }
 
-        function showNoAppointments() {
+//         function showNoAppointments() {
 
-            const tbody =
-                document.getElementById("recent-appointments-body");
+//             const tbody =
+//                 document.getElementById("recent-appointments-body");
 
-            if (!tbody) {
-                return;
-            }
+//             if (!tbody) {
+//                 return;
+//             }
 
-            tbody.innerHTML = `
-        <tr>
-            <td colspan="4" style="text-align: center;">
-                No appointments found.
-            </td>
-        </tr>
-    `;
-        }
-        function getStatusClass(status) {
+//             tbody.innerHTML = `
+//         <tr>
+//             <td colspan="4" style="text-align: center;">
+//                 No appointments found.
+//             </td>
+//         </tr>
+//     `;
+//         }
+//         function getStatusClass(status) {
 
-            if (!status) {
-                return "";
-            }
+//             if (!status) {
+//                 return "";
+//             }
 
-            return status
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-        }
+//             return status
+//                 .toLowerCase()
+//                 .replace(/\s+/g, "-");
+//         }
 
 
 
 
-        function addVital() {
+//         function addVital() {
 
-            const nameInput =
-                document.getElementById("vital-name");
+//             const nameInput =
+//                 document.getElementById("vital-name");
 
-            const valueInput =
-                document.getElementById("vital-value");
+//             const valueInput =
+//                 document.getElementById("vital-value");
 
-            const unitInput =
-                document.getElementById("vital-unit");
+//             const unitInput =
+//                 document.getElementById("vital-unit");
 
 
-            const name =
-                nameInput.value.trim();
+//             const name =
+//                 nameInput.value.trim();
 
-            const value =
-                valueInput.value.trim();
+//             const value =
+//                 valueInput.value.trim();
 
-            const unit =
-                unitInput.value.trim();
+//             const unit =
+//                 unitInput.value.trim();
 
-            if (name === "") {
+//             if (name === "") {
 
-                alert("Please enter the vital name.");
+//                 alert("Please enter the vital name.");
 
-                nameInput.focus();
+//                 nameInput.focus();
 
-                return;
-            }
+//                 return;
+//             }
 
 
-            if (value === "") {
+//             if (value === "") {
 
-                alert("Please enter the vital value.");
+//                 alert("Please enter the vital value.");
 
-                valueInput.focus();
+//                 valueInput.focus();
 
-                return;
-            }
+//                 return;
+//             }
 
 
-            if (unit === "") {
+//             if (unit === "") {
 
-                alert("Please enter the unit.");
+//                 alert("Please enter the unit.");
 
-                unitInput.focus();
+//                 unitInput.focus();
 
-                return;
-            }
+//                 return;
+//             }
 
 
-            const vital = {
+//             const vital = {
 
-                name: name,
+//                 name: name,
 
-                value: value,
+//                 value: value,
 
-                unit: unit,
+//                 unit: unit,
 
-                recorded_at:
-                    new Date().toISOString()
+//                 recorded_at:
+//                     new Date().toISOString()
 
-            };
+//             };
 
-            newVitals.push(vital);
-            displayNewVitals();
-            nameInput.value = "";
+//             newVitals.push(vital);
+//             displayNewVitals();
+//             nameInput.value = "";
 
-            valueInput.value = "";
+//             valueInput.value = "";
 
-            unitInput.value = "";
-            nameInput.focus();
+//             unitInput.value = "";
+//             nameInput.focus();
 
-        }
+//         }
 
-        function displayNewVitals() {
+//         function displayNewVitals() {
 
-            const container =
-                document.getElementById(
-                    "new-vitals-list"
-                );
+//             const container =
+//                 document.getElementById(
+//                     "new-vitals-list"
+//                 );
 
-            if (newVitals.length === 0) {
+//             if (newVitals.length === 0) {
 
-                container.innerHTML = `
-                <p class="empty-message">
-                    Added vital data will appear here.
-                </p>
-            `;
+//                 container.innerHTML = `
+//                 <p class="empty-message">
+//                     Added vital data will appear here.
+//                 </p>
+//             `;
 
-                return;
-            }
-            container.innerHTML = "";
-            newVitals.forEach(
-                function (vital, index) {
+//                 return;
+//             }
+//             container.innerHTML = "";
+//             newVitals.forEach(
+//                 function (vital, index) {
 
-                    const item =
-                        document.createElement("div");
+//                     const item =
+//                         document.createElement("div");
 
 
-                    item.className =
-                        "new-vital-item";
+//                     item.className =
+//                         "new-vital-item";
 
 
-                    item.innerHTML = `
+//                     item.innerHTML = `
 
-                    <span class="new-vital-name">
-                        ${escapeHTML(vital.name)}
-                    </span>
+//                     <span class="new-vital-name">
+//                         ${escapeHTML(vital.name)}
+//                     </span>
 
-                    <span class="new-vital-value">
-                        ${escapeHTML(vital.value)}
-                    </span>
+//                     <span class="new-vital-value">
+//                         ${escapeHTML(vital.value)}
+//                     </span>
 
-                    <span class="new-vital-unit">
-                        ${escapeHTML(vital.unit)}
-                    </span>
+//                     <span class="new-vital-unit">
+//                         ${escapeHTML(vital.unit)}
+//                     </span>
 
-                    <button
-                        type="button"
-                        class="remove-vital"
-                        onclick="removeVital(${index})"
-                        title="Remove"
-                    >
-                        ×
-                    </button>
+//                     <button
+//                         type="button"
+//                         class="remove-vital"
+//                         onclick="removeVital(${index})"
+//                         title="Remove"
+//                     >
+//                         ×
+//                     </button>
 
-                `;
+//                 `;
 
 
-                    container.appendChild(item);
+//                     container.appendChild(item);
 
-                }
-            );
+//                 }
+//             );
 
-        }
+//         }
 
-        function removeVital(index) {
+//         function removeVital(index) {
 
-            if (
-                index < 0 ||
-                index >= newVitals.length
-            ) {
-                return;
-            }
+//             if (
+//                 index < 0 ||
+//                 index >= newVitals.length
+//             ) {
+//                 return;
+//             }
 
 
-            newVitals.splice(index, 1);
+//             newVitals.splice(index, 1);
 
 
-            displayNewVitals();
+//             displayNewVitals();
 
-        }
+//         }
 
-        async function saveVitalData() {
+//         async function saveVitalData() {
 
-            if (isSaving) {
-                return;
-            }
-            if (newVitals.length === 0) {
+//             if (isSaving) {
+//                 return;
+//             }
+//             if (newVitals.length === 0) {
 
-                alert(
-                    "Please add at least one vital before saving."
-                );
+//                 alert(
+//                     "Please add at least one vital before saving."
+//                 );
 
-                return;
-            }
+//                 return;
+//             }
 
-            const confirmed = confirm(
-                "Do you want to save all entered vital data?"
-            );
-            if (!confirmed) {
-                return;
-            }
-            isSaving = true;
-            const saveButton =
-                document.querySelector(
-                    ".save-vitals-btn"
-                );
-            if (saveButton) {
+//             const confirmed = confirm(
+//                 "Do you want to save all entered vital data?"
+//             );
+//             if (!confirmed) {
+//                 return;
+//             }
+//             isSaving = true;
+//             const saveButton =
+//                 document.querySelector(
+//                     ".save-vitals-btn"
+//                 );
+//             if (saveButton) {
 
-                saveButton.disabled = true;
+//                 saveButton.disabled = true;
 
-                saveButton.textContent =
-                    "Saving...";
+//                 saveButton.textContent =
+//                     "Saving...";
 
-            }
+//             }
 
 
-            try {
+//             try {
 
-                const response = await fetch(
-                    "/patient/vitals",
-                    {
-                        method: "POST",
+//                 const response = await fetch(
+//                     "/patient/vitals",
+//                     {
+//                         method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+//                         headers: {
+//                             "Content-Type":
+//                                 "application/json"
+//                         },
 
-                        // JWT is stored in access_token cookie
-                        credentials: "include",
+//                         // JWT is stored in access_token cookie
+//                         credentials: "include",
 
-                        body: JSON.stringify({
-                            vitals: newVitals
-                        })
-                    }
-                );
+//                         body: JSON.stringify({
+//                             vitals: newVitals
+//                         })
+//                     }
+//                 );
 
-                const result =
-                    await response.json();
+//                 const result =
+//                     await response.json();
 
-                if (!response.ok) {
+//                 if (!response.ok) {
 
-                    alert(
-                        result.message ||
-                        "Failed to save vital data."
-                    );
+//                     alert(
+//                         result.message ||
+//                         "Failed to save vital data."
+//                     );
 
-                    return;
-                }
-                alert(
-                    result.message ||
-                    "Vital data saved successfully."
-                );
-                newVitals = [];
-                displayNewVitals();
-                await loadVitalData();
-            } catch (error) {
+//                     return;
+//                 }
+//                 alert(
+//                     result.message ||
+//                     "Vital data saved successfully."
+//                 );
+//                 newVitals = [];
+//                 displayNewVitals();
+//                 await loadVitalData();
+//             } catch (error) {
 
-                console.error(
-                    "Error saving vital data:",
-                    error
-                );
-                alert(
-                    "Unable to save vital data. Please try again."
-                );
+//                 console.error(
+//                     "Error saving vital data:",
+//                     error
+//                 );
+//                 alert(
+//                     "Unable to save vital data. Please try again."
+//                 );
 
-            } finally {
+//             } finally {
 
-                isSaving = false;
-                if (saveButton) {
-                    saveButton.disabled = false;
-                    saveButton.textContent =
-                        "Save Vital Data";
-                }
-            }
-        }
+//                 isSaving = false;
+//                 if (saveButton) {
+//                     saveButton.disabled = false;
+//                     saveButton.textContent =
+//                         "Save Vital Data";
+//                 }
+//             }
+//         }
 
 
-        async function loadVitalData() {
-            try {
-                const response = await fetch(
-                    "/patient/vitals",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
+//         async function loadVitalData() {
+//             try {
+//                 const response = await fetch(
+//                     "/patient/vitals",
+//                     {
+//                         method: "GET",
+//                         credentials: "include"
+//                     }
+//                 );
 
-                if (response.status === 401) {
+//                 if (response.status === 401) {
 
-                    console.log(
-                        "Patient is not authenticated."
-                    );
+//                     console.log(
+//                         "Patient is not authenticated."
+//                     );
 
-                    return;
-                }
-                const result =
-                    await response.json();
+//                     return;
+//                 }
+//                 const result =
+//                     await response.json();
 
 
-                if (!response.ok) {
+//                 if (!response.ok) {
 
-                    console.error(
-                        result.message ||
-                        "Failed to load vital data."
-                    );
+//                     console.error(
+//                         result.message ||
+//                         "Failed to load vital data."
+//                     );
 
-                    return;
-                }
+//                     return;
+//                 }
 
-                const vitals =
-                    result.data || [];
+//                 const vitals =
+//                     result.data || [];
 
 
-                displaySavedVitals(vitals);
+//                 displaySavedVitals(vitals);
 
 
-            } catch (error) {
+//             } catch (error) {
 
-                console.error(
-                    "Error loading vital data:",
-                    error
-                );
-            }
-        }
+//                 console.error(
+//                     "Error loading vital data:",
+//                     error
+//                 );
+//             }
+//         }
 
-        function displaySavedVitals(vitals) {
+//         function displaySavedVitals(vitals) {
 
-            const tbody =
-                document.getElementById(
-                    "saved-vitals-body"
-                );
+//             const tbody =
+//                 document.getElementById(
+//                     "saved-vitals-body"
+//                 );
 
 
-            if (!tbody) {
+//             if (!tbody) {
 
-                console.error(
-                    "saved-vitals-body not found."
-                );
+//                 console.error(
+//                     "saved-vitals-body not found."
+//                 );
 
-                return;
-            }
+//                 return;
+//             }
 
-            if (
-                !vitals ||
-                !Array.isArray(vitals) ||
-                vitals.length === 0
-            ) {
+//             if (
+//                 !vitals ||
+//                 !Array.isArray(vitals) ||
+//                 vitals.length === 0
+//             ) {
 
-                tbody.innerHTML = `
-                <tr>
-                    <td
-                        colspan="3"
-                        class="no-vitals"
-                    >
-                        No vital data recorded yet.
-                    </td>
-                </tr>
-            `;
+//                 tbody.innerHTML = `
+//                 <tr>
+//                     <td
+//                         colspan="3"
+//                         class="no-vitals"
+//                     >
+//                         No vital data recorded yet.
+//                     </td>
+//                 </tr>
+//             `;
 
-                return;
-            }
+//                 return;
+//             }
 
 
-            // -----------------------------------------------------
-            // CLEAR TABLE
-            // -----------------------------------------------------
+//             // -----------------------------------------------------
+//             // CLEAR TABLE
+//             // -----------------------------------------------------
 
-            tbody.innerHTML = "";
+//             tbody.innerHTML = "";
 
 
-            // -----------------------------------------------------
-            // DISPLAY VITALS
-            // -----------------------------------------------------
+//             // -----------------------------------------------------
+//             // DISPLAY VITALS
+//             // -----------------------------------------------------
 
-            vitals.forEach(function (vital) {
+//             vitals.forEach(function (vital) {
 
-                const row =
-                    document.createElement("tr");
+//                 const row =
+//                     document.createElement("tr");
 
 
-                const nameCell =
-                    document.createElement("td");
+//                 const nameCell =
+//                     document.createElement("td");
 
-                const valueCell =
-                    document.createElement("td");
+//                 const valueCell =
+//                     document.createElement("td");
 
-                const dateCell =
-                    document.createElement("td");
+//                 const dateCell =
+//                     document.createElement("td");
 
 
-                // Vital name
+//                 // Vital name
 
-                nameCell.textContent =
-                    vital.name;
+//                 nameCell.textContent =
+//                     vital.name;
 
 
-                // Value + unit
+//                 // Value + unit
 
-                valueCell.textContent =
-                    vital.unit
-                        ? `${vital.value} ${vital.unit}`
-                        : vital.value;
+//                 valueCell.textContent =
+//                     vital.unit
+//                         ? `${vital.value} ${vital.unit}`
+//                         : vital.value;
 
 
-                // Date
+//                 // Date
 
-                dateCell.textContent =
-                    formatDate(
-                        vital.recorded_at
-                    );
+//                 dateCell.textContent =
+//                     formatDate(
+//                         vital.recorded_at
+//                     );
 
 
-                row.appendChild(nameCell);
+//                 row.appendChild(nameCell);
 
-                row.appendChild(valueCell);
+//                 row.appendChild(valueCell);
 
-                row.appendChild(dateCell);
+//                 row.appendChild(dateCell);
 
 
-                tbody.appendChild(row);
+//                 tbody.appendChild(row);
 
-            });
+//             });
 
-        }
+//         }
 
 
-        // =========================================================
-        // DATE FORMAT
-        // =========================================================
+//         // =========================================================
+//         // DATE FORMAT
+//         // =========================================================
 
-        function formatDate(dateValue) {
+//         function formatDate(dateValue) {
 
-            if (!dateValue) {
-                return "-";
-            }
+//             if (!dateValue) {
+//                 return "-";
+//             }
 
 
-            const date =
-                new Date(dateValue);
+//             const date =
+//                 new Date(dateValue);
 
 
-            if (
-                isNaN(
-                    date.getTime()
-                )
-            ) {
-                return "-";
-            }
+//             if (
+//                 isNaN(
+//                     date.getTime()
+//                 )
+//             ) {
+//                 return "-";
+//             }
 
 
-            return date.toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            );
+//             return date.toLocaleDateString(
+//                 "en-IN",
+//                 {
+//                     day: "2-digit",
+//                     month: "short",
+//                     year: "numeric"
+//                 }
+//             );
 
-        }
+//         }
 
 
 
-        function escapeHTML(value) {
+//         function escapeHTML(value) {
 
-            const div =
-                document.createElement("div");
+//             const div =
+//                 document.createElement("div");
 
 
-            div.textContent =
-                value;
+//             div.textContent =
+//                 value;
 
 
-            return div.innerHTML;
+//             return div.innerHTML;
 
-        }
+//         }
 
 
-        document.getElementById("medicalReportForm").addEventListener("submit", function (e) {
+//         document.getElementById("medicalReportForm").addEventListener("submit", function (e) {
 
-            const fileInput = document.getElementById("medicalReportFile");
-            const file = fileInput.files[0];
+//             const fileInput = document.getElementById("medicalReportFile");
+//             const file = fileInput.files[0];
 
-            if (!file) {
-                e.preventDefault();
-                alert("Please select a medical report.");
-                return;
-            }
+//             if (!file) {
+//                 e.preventDefault();
+//                 alert("Please select a medical report.");
+//                 return;
+//             }
 
-            const maxSize = 10 * 1024 * 1024;
+//             const maxSize = 10 * 1024 * 1024;
 
-            if (file.size > maxSize) {
-                e.preventDefault();
-                alert("File size must be less than 10 MB.");
-            }
-        });
+//             if (file.size > maxSize) {
+//                 e.preventDefault();
+//                 alert("File size must be less than 10 MB.");
+//             }
+//         });
     </script>
 </body>
 <script>
 
-                document.addEventListener("DOMContentLoaded", function () {
 
-            loadVitalData();
-            loadRecentAppointments();
-            loadRecentMedicalReports();
-            loadRecentPrescriptions();
-            loadAddress()
-        });
         
-
-document.getElementById("scheduleAppointmentBtn").addEventListener("click", async function() {
-
-console.log("response.status");
-
-    try {
-      const response = await fetch("/patient/isProfileComplete", {
-        method: "GET",
-        credentials: "include"
-      });
-
- const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        alert(data.message || "Failed to check profile.");
-        return;
-      }
-
-      window.location.href = data.redirect;
-    } catch (error) {
-      console.error("Error checking profile:", error);
-      alert("Something went wrong. Please try again.");
-    }
-    
-  });
 
   
         document.addEventListener("DOMContentLoaded", function () {
@@ -1625,917 +1593,21 @@ console.log("response.status");
         });
 
 
-        let newVitals = [];
 
-        let isSaving = false;
 
 
-        async function loadRecentPrescriptions() {
+  
 
-            const container =
-                document.getElementById("recent-prescriptions-list");
 
-            if (!container) {
-                return;
-            }
 
-            try {
-
-                const response = await fetch(
-                    "/patient/prescriptions/recent",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
-
-                if (response.status === 401) {
-
-                    console.log("Patient is not authenticated.");
-
-                    return;
-                }
-
-                const result = await response.json();
-
-                if (!response.ok) {
-
-                    console.error(
-                        result.message ||
-                        "Failed to load prescriptions."
-                    );
-
-                    showNoPrescriptions();
-
-                    return;
-                }
-
-                const prescriptions = result.data || [];
-
-                displayRecentPrescriptions(prescriptions);
-
-            } catch (error) {
-
-                console.error(
-                    "Error loading prescriptions:",
-                    error
-                );
-
-                showNoPrescriptions();
-            }
-        }
-
-        function displayRecentPrescriptions(prescriptions) {
-
-            const container =
-                document.getElementById("recent-prescriptions-list");
-
-            if (!container) {
-                return;
-            }
-
-            if (
-                !prescriptions ||
-                !Array.isArray(prescriptions) ||
-                prescriptions.length === 0
-            ) {
-
-                showNoPrescriptions();
-
-                return;
-            }
-
-            container.innerHTML = "";
-
-            prescriptions.forEach(function (prescription) {
-
-                const row =
-                    document.createElement("div");
-
-                row.className = "prescription-row";
-
-                row.innerHTML = `
-            <span>
-                ${formatDate(prescription.created_at)}
-            </span>
-
-            <div>
-                <b>
-                    ${escapeHTML(prescription.doctor_name)}
-                </b>
-                  <small>
-        ${escapeHTML(prescription.professional_role || "")}
-    </small>
-            </div>
-        `;
-
-                container.appendChild(row);
-
-            });
-        }
-        function showNoPrescriptions() {
-
-            const container =
-                document.getElementById("recent-prescriptions-list");
-
-            if (!container) {
-                return;
-            }
-
-            container.innerHTML = `
-        <p style="text-align: center;">
-            No prescriptions found.
-        </p>
-    `;
-        }
-
-        async function loadRecentMedicalReports() {
-
-            const container =
-                document.getElementById("medical-reports-list");
-
-            try {
-
-                const response = await fetch("/patient/files/recent", {
-                    method: "GET",
-                    credentials: "include"
-                });
-
-                if (response.status === 401) {
-
-                    console.log("Patient is not authenticated.");
-
-                    return;
-                }
-
-                const result = await response.json();
-
-                if (!response.ok) {
-
-                    console.error(
-                        result.message ||
-                        "Failed to load medical reports."
-                    );
-
-                    showNoMedicalReports();
-
-                    return;
-                }
-
-                const files = result.data || [];
-
-                displayMedicalReports(files);
-
-            } catch (error) {
-
-                console.error(
-                    "Error loading medical reports:",
-                    error
-                );
-
-                showNoMedicalReports();
-            }
-        }
-
-        async function loadAddress() {
-            const addressSection = document.getElementById("addressSection");
-
-            try {
-                const response = await fetch("/patient/address", {
-                    method: "GET",
-                    credentials: "include"
-                });
-
-                const data = await response.json();
-
-                if (!response.ok || !data.success) {
-                    throw new Error(data.message || "Failed to load address");
-                }
-
-                if (!data.exists || !data.address) {
-                    addressSection.innerHTML = `
-                <div class="no-address">
-                    <p>No address added yet.</p><a href="/patient/completeAddress"><button type="button" class="green-btn">Add Address</button></a>
-                </div>
-            `;
-
-                    return;
-                }
-
-                const address = data.address;
-
-                addressSection.innerHTML = `
-            <div class="address-details">
-                <p>${escapeHTML(address.address || "")}</p>
-                <p>${escapeHTML(address.place || "")}</p>
-                <p>${escapeHTML(address.country || "")}</p>
-<a href="/patient/completeAddress?edit=true"><button type="button" class="green-btn">Edit Address</button></a>
-            </div>
-        `;
-            
-
-            } catch (error) {
-                console.error("Error loading address:", error);
-
-                addressSection.innerHTML = `
-            <p>Unable to load address.</p>
-        `;
-            }
-        }
-
-        
-        function displayMedicalReports(files) {
-
-            const container =
-                document.getElementById("medical-reports-list");
-
-            if (!container) {
-                return;
-            }
-
-            if (!files || files.length === 0) {
-
-                showNoMedicalReports();
-
-                return;
-            }
-
-            container.innerHTML = "";
-
-            files.forEach(function (file) {
-
-                const item =
-                    document.createElement("div");
-
-                item.className =
-                    "file " + getFileClass(file.file_type);
-
-                item.innerHTML = `
-            <span>▤</span>
-
-            <div>
-                <b>${escapeHTML(file.file_name)}</b>
-
-                <small>
-                    ${escapeHTML(file.category)}
-                    · ${formatDate(file.uploaded_at)}
-                </small>
-            </div>
-        `;
-
-                container.appendChild(item);
-
-            });
-        }
-
-        function showNoMedicalReports() {
-
-            const container =
-                document.getElementById("medical-reports-list");
-
-            if (!container) {
-                return;
-            }
-
-            container.innerHTML = `
-        <p style="text-align:center;">
-            No medical reports found.
-        </p>
-    `;
-        }
-
-        function getFileClass(fileType) {
-
-            if (!fileType) {
-                return "blue";
-            }
-
-            fileType = fileType.toLowerCase();
-
-            if (fileType.includes("pdf")) {
-                return "red";
-            }
-
-            if (
-                fileType.includes("jpg") ||
-                fileType.includes("jpeg") ||
-                fileType.includes("png")
-            ) {
-                return "blue";
-            }
-
-            return "green";
-        }
-
-        async function loadRecentAppointments() {
-
-            const tbody =
-                document.getElementById("recent-appointments-body");
-
-            try {
-
-                const response = await fetch(
-                    "/patient/appointments/recent",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
-
-                if (response.status === 401) {
-
-                    console.log("Patient is not authenticated.");
-
-                    return;
-                }
-
-                const result = await response.json();
-
-                if (!response.ok) {
-
-                    console.error(
-                        result.message ||
-                        "Failed to load appointments."
-                    );
-
-                    showNoAppointments();
-
-                    return;
-                }
-
-                const appointments = result.data || [];
-
-                displayRecentAppointments(appointments);
-
-            } catch (error) {
-
-                console.error(
-                    "Error loading appointments:",
-                    error
-                );
-
-                showNoAppointments();
-            }
-        }
-        function displayRecentAppointments(appointments) {
-
-            const tbody =
-                document.getElementById("recent-appointments-body");
-
-            if (!tbody) {
-                return;
-            }
-
-            if (
-                !appointments ||
-                !Array.isArray(appointments) ||
-                appointments.length === 0
-            ) {
-
-                showNoAppointments();
-
-                return;
-            }
-
-            tbody.innerHTML = "";
-
-            appointments.forEach(function (appointment) {
-
-                const row = document.createElement("tr");
-                const doctorName = appointment.doctor
-                    ? `${appointment.doctor.first_name || ""} ${appointment.doctor.last_name || ""}`.trim()
-                    : "-";
-
-                row.innerHTML = `
-            <td>
-                #${escapeHTML(String(appointment.appointment_id))}
-            </td>
-
-            <td>
-                ${formatDate(appointment.appointment_date)}
-            </td>
-
-            <td>
-                <b>
-                    ${escapeHTML(
-                    doctorName || "-"
-                )}
-                    
-                </b>
-            </td>
-
-            <td>
-                <span class="status ${getStatusClass(appointment.status)}">
-                    ${escapeHTML(appointment.status || "-")}
-                </span>
-            </td>
-        `;
-
-                tbody.appendChild(row);
-
-            });
-        }
-
-        function showNoAppointments() {
-
-            const tbody =
-                document.getElementById("recent-appointments-body");
-
-            if (!tbody) {
-                return;
-            }
-
-            tbody.innerHTML = `
-        <tr>
-            <td colspan="4" style="text-align: center;">
-                No appointments found.
-            </td>
-        </tr>
-    `;
-        }
-        function getStatusClass(status) {
-
-            if (!status) {
-                return "";
-            }
-
-            return status
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-        }
-
-
-
-
-        function addVital() {
-
-            const nameInput =
-                document.getElementById("vital-name");
-
-            const valueInput =
-                document.getElementById("vital-value");
-
-            const unitInput =
-                document.getElementById("vital-unit");
-
-
-            const name =
-                nameInput.value.trim();
-
-            const value =
-                valueInput.value.trim();
-
-            const unit =
-                unitInput.value.trim();
-
-            if (name === "") {
-
-                alert("Please enter the vital name.");
-
-                nameInput.focus();
-
-                return;
-            }
-
-
-            if (value === "") {
-
-                alert("Please enter the vital value.");
-
-                valueInput.focus();
-
-                return;
-            }
-
-
-            if (unit === "") {
-
-                alert("Please enter the unit.");
-
-                unitInput.focus();
-
-                return;
-            }
-
-
-            const vital = {
-
-                name: name,
-
-                value: value,
-
-                unit: unit,
-
-                recorded_at:
-                    new Date().toISOString()
-
-            };
-
-            newVitals.push(vital);
-            displayNewVitals();
-            nameInput.value = "";
-
-            valueInput.value = "";
-
-            unitInput.value = "";
-            nameInput.focus();
-
-        }
-
-        function displayNewVitals() {
-
-            const container =
-                document.getElementById(
-                    "new-vitals-list"
-                );
-
-            if (newVitals.length === 0) {
-
-                container.innerHTML = `
-                <p class="empty-message">
-                    Added vital data will appear here.
-                </p>
-            `;
-
-                return;
-            }
-            container.innerHTML = "";
-            newVitals.forEach(
-                function (vital, index) {
-
-                    const item =
-                        document.createElement("div");
-
-
-                    item.className =
-                        "new-vital-item";
-
-
-                    item.innerHTML = `
-
-                    <span class="new-vital-name">
-                        ${escapeHTML(vital.name)}
-                    </span>
-
-                    <span class="new-vital-value">
-                        ${escapeHTML(vital.value)}
-                    </span>
-
-                    <span class="new-vital-unit">
-                        ${escapeHTML(vital.unit)}
-                    </span>
-
-                    <button
-                        type="button"
-                        class="remove-vital"
-                        onclick="removeVital(${index})"
-                        title="Remove"
-                    >
-                        ×
-                    </button>
-
-                `;
-
-
-                    container.appendChild(item);
-
-                }
-            );
-
-        }
-
-        function removeVital(index) {
-
-            if (
-                index < 0 ||
-                index >= newVitals.length
-            ) {
-                return;
-            }
-
-
-            newVitals.splice(index, 1);
-
-
-            displayNewVitals();
-
-        }
-
-        async function saveVitalData() {
-
-            if (isSaving) {
-                return;
-            }
-            if (newVitals.length === 0) {
-
-                alert(
-                    "Please add at least one vital before saving."
-                );
-
-                return;
-            }
-
-            const confirmed = confirm(
-                "Do you want to save all entered vital data?"
-            );
-            if (!confirmed) {
-                return;
-            }
-            isSaving = true;
-            const saveButton =
-                document.querySelector(
-                    ".save-vitals-btn"
-                );
-            if (saveButton) {
-
-                saveButton.disabled = true;
-
-                saveButton.textContent =
-                    "Saving...";
-
-            }
-
-
-            try {
-
-                const response = await fetch(
-                    "/patient/vitals",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        // JWT is stored in access_token cookie
-                        credentials: "include",
-
-                        body: JSON.stringify({
-                            vitals: newVitals
-                        })
-                    }
-                );
-
-                const result =
-                    await response.json();
-
-                if (!response.ok) {
-
-                    alert(
-                        result.message ||
-                        "Failed to save vital data."
-                    );
-
-                    return;
-                }
-                alert(
-                    result.message ||
-                    "Vital data saved successfully."
-                );
-                newVitals = [];
-                displayNewVitals();
-                await loadVitalData();
-            } catch (error) {
-
-                console.error(
-                    "Error saving vital data:",
-                    error
-                );
-                alert(
-                    "Unable to save vital data. Please try again."
-                );
-
-            } finally {
-
-                isSaving = false;
-                if (saveButton) {
-                    saveButton.disabled = false;
-                    saveButton.textContent =
-                        "Save Vital Data";
-                }
-            }
-        }
-
-
-        async function loadVitalData() {
-            try {
-                const response = await fetch(
-                    "/patient/vitals",
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
-
-                if (response.status === 401) {
-
-                    console.log(
-                        "Patient is not authenticated."
-                    );
-
-                    return;
-                }
-                const result =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    console.error(
-                        result.message ||
-                        "Failed to load vital data."
-                    );
-
-                    return;
-                }
-
-                const vitals =
-                    result.data || [];
-
-
-                displaySavedVitals(vitals);
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error loading vital data:",
-                    error
-                );
-            }
-        }
-
-        function displaySavedVitals(vitals) {
-
-            const tbody =
-                document.getElementById(
-                    "saved-vitals-body"
-                );
-
-
-            if (!tbody) {
-
-                console.error(
-                    "saved-vitals-body not found."
-                );
-
-                return;
-            }
-
-            if (
-                !vitals ||
-                !Array.isArray(vitals) ||
-                vitals.length === 0
-            ) {
-
-                tbody.innerHTML = `
-                <tr>
-                    <td
-                        colspan="3"
-                        class="no-vitals"
-                    >
-                        No vital data recorded yet.
-                    </td>
-                </tr>
-            `;
-
-                return;
-            }
-
-
-            // -----------------------------------------------------
-            // CLEAR TABLE
-            // -----------------------------------------------------
-
-            tbody.innerHTML = "";
-
-
-            // -----------------------------------------------------
-            // DISPLAY VITALS
-            // -----------------------------------------------------
-
-            vitals.forEach(function (vital) {
-
-                const row =
-                    document.createElement("tr");
-
-
-                const nameCell =
-                    document.createElement("td");
-
-                const valueCell =
-                    document.createElement("td");
-
-                const dateCell =
-                    document.createElement("td");
-
-
-                // Vital name
-
-                nameCell.textContent =
-                    vital.name;
-
-
-                // Value + unit
-
-                valueCell.textContent =
-                    vital.unit
-                        ? `${vital.value} ${vital.unit}`
-                        : vital.value;
-
-
-                // Date
-
-                dateCell.textContent =
-                    formatDate(
-                        vital.recorded_at
-                    );
-
-
-                row.appendChild(nameCell);
-
-                row.appendChild(valueCell);
-
-                row.appendChild(dateCell);
-
-
-                tbody.appendChild(row);
-
-            });
-
-        }
-
+  
 
         // =========================================================
         // DATE FORMAT
         // =========================================================
 
-        function formatDate(dateValue) {
-
-            if (!dateValue) {
-                return "-";
-            }
-
-
-            const date =
-                new Date(dateValue);
-
-
-            if (
-                isNaN(
-                    date.getTime()
-                )
-            ) {
-                return "-";
-            }
-
-
-            return date.toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            );
-
-        }
 
 
 
-        function escapeHTML(value) {
-
-            const div =
-                document.createElement("div");
-
-
-            div.textContent =
-                value;
-
-
-            return div.innerHTML;
-
-        }
-
-
-        document.getElementById("medicalReportForm").addEventListener("submit", function (e) {
-
-            const fileInput = document.getElementById("medicalReportFile");
-            const file = fileInput.files[0];
-
-            if (!file) {
-                e.preventDefault();
-                alert("Please select a medical report.");
-                return;
-            }
-
-            const maxSize = 10 * 1024 * 1024;
-
-            if (file.size > maxSize) {
-                e.preventDefault();
-                alert("File size must be less than 10 MB.");
-            }
-        });
 </script>
 </html>

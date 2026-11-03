@@ -132,7 +132,7 @@ func (r *patientRepository) GetPatientByID(patientID uint, userID uint) (*models
 }
 func (r *patientRepository) IsProfileComplete(patientID uint) (bool, error) {
 
-	var patient models.Patient
+	var patient *models.Patient
 
 	err := database.DB.
 		Select("first_name", "last_name", "gender", "dob").
@@ -153,7 +153,7 @@ func (r *patientRepository) IsProfileComplete(patientID uint) (bool, error) {
 }
 
 func (r *patientRepository) GetAddressByPatientID(patientID uint) (*models.Address, error) {
-	var address models.Address
+	var address *models.Address
 
 	err := database.DB.Where("patient_id = ?", patientID).
 		First(&address).Error
@@ -162,5 +162,5 @@ func (r *patientRepository) GetAddressByPatientID(patientID uint) (*models.Addre
 		return nil, err
 	}
 
-	return &address, nil
+	return address, nil
 }

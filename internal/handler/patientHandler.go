@@ -353,15 +353,15 @@ func (h *patientHandler) Home(c *gin.Context) {
 
 	logger.Log.Info(
 		"Patient details loaded successfully",
-		zap.String("role", patient.PatientName),
+		zap.String("role", "patient"),
 		zap.Uint("userID", userID),
 		zap.Uint("patientID", patientID),
 	)
 
 	// Get user details
 	user, err := h.Service.GetUserByID(userID)
-
-	if err != nil {
+	address, err1 := h.patientService.GetAddressByPatientID(patientID)
+	if err != nil || err1 != nil {
 
 		logger.Log.Error(
 			"Failed to load user details",
@@ -372,14 +372,18 @@ func (h *patientHandler) Home(c *gin.Context) {
 		)
 
 		c.HTML(http.StatusInternalServerError, "patient-home.html", gin.H{
-			"error": "Internal server error",
+			"error":   "Internal server error",
+			"patient": patient,
+			"user":    user,
+			"address": address,
 		})
 		return
 	}
 
 	logger.Log.Info(
 		"User contact details loaded successfully",
-		zap.String("role", "patient"),
+		zap.String("role", address.Country+address.Place+address.Country),
+
 		zap.Uint("userID", userID),
 		zap.Uint("patientID", patientID),
 	)
@@ -394,6 +398,7 @@ func (h *patientHandler) Home(c *gin.Context) {
 	c.HTML(http.StatusOK, "patient-home.html", gin.H{
 		"patient": patient,
 		"user":    user,
+		"address": address,
 	})
 }
 

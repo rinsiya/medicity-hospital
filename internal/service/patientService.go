@@ -118,7 +118,11 @@ func (s *patientService) GetPatientByID(patientID, userID uint) (*dto.PatientPro
 		Weight:       patient.Weight,
 		ProfilePhoto: "",
 	}
-
+	if profile.Gender == "" {
+		profile.IsProfileComplete = false
+	} else {
+		profile.IsProfileComplete = true
+	}
 	file := s.fileRepo.GetProfilePhotoByUserID(userID)
 
 	if file != nil {

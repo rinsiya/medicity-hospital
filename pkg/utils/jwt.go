@@ -15,15 +15,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(user_id uint,role_id uint, role string) (string, error) {
-
+func GenerateJWT(user_id uint, role_id uint, role string) (string, error) {
+	now := time.Now()
 	claims := Claims{
 		UserID: user_id,
 		RoleID: role_id,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
 		},
 	}
 
