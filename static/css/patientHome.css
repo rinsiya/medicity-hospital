@@ -468,10 +468,18 @@ td b {
     text-align: center;
     padding-bottom: 14px;
 }
+.profile-picture {
+  display: block;
 
+  margin: 0 auto 7px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #d3dad7;
+}
 .avatar {
     width: 47px;
-    height: 47px;
+    height: 47px;overflow: hidden;
     margin: 0 auto 7px;
     border-radius: 50%;
     border: 2px solid white;

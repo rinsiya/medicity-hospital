@@ -18,7 +18,7 @@ body {
     background: #1d1d1d;
     color: var(--text);
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .topbar {
@@ -42,7 +42,7 @@ body {
     background: #c90000;
     color: white;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
     border-radius: 4px;
     padding: 10px 16px;
     cursor: pointer;
@@ -95,7 +95,7 @@ main {
 .page-heading p {
     margin: 0;
     color: #66706c;
-    font-size: 10px;
+    font-size: 13px;
     line-height: 1.45;
 }
 
@@ -130,7 +130,7 @@ main {
     display: grid;
     place-items: center;
     color: #5ca376;
-    font-size: 14px;
+    font-size: 15px;
     flex: 0 0 auto;
 }
 
@@ -140,13 +140,13 @@ main {
 }
 
 .pending-card strong {
-    font-size: 10px;
+    font-size: 13px;
     margin-bottom: 2px;
 }
 
 .pending-card small {
     color: #6d7773;
-    font-size: 8px;
+    font-size: 11px;
 }
 
 .card {
@@ -162,7 +162,7 @@ main {
 
 .card h2 {
     margin: 0;
-    font-size: 13px;
+    font-size: 15px;
     color: var(--green);
 }
 
@@ -180,7 +180,7 @@ main {
 label {
     display: block;
     color: #26352e;
-    font-size: 7px;
+    font-size: 13px;
     font-weight: 700;
     margin-bottom: 5px;
     letter-spacing: .1px;
@@ -188,7 +188,7 @@ label {
 
 .details-grid span {
     display: block;
-    font-size: 8px;
+    font-size: 13px;
     color: #313a36;
 }
 
@@ -200,7 +200,7 @@ label {
 .section-subtitle {
     display: block;
     color: #737b78;
-    font-size: 8px;
+    font-size: 12px;
     margin: -1px 0 8px;
 }
 
@@ -243,7 +243,7 @@ select {
     background: var(--green);
     color: white;
     font-weight: 700;
-    font-size: 8px;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -276,13 +276,13 @@ select {
 }
 
 .preview-header span {
-    font-size: 6px;
+    font-size: 9px;
     color: #c90000;
     font-weight: 700;
 }
 
 .preview-header b {
-    font-size: 5px;
+    font-size: 9px;
     color: #d35c5c;
     background: #fff0f0;
     padding: 3px 5px;
@@ -302,7 +302,7 @@ select {
 
 .doctor-name {
     text-align: center;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -331,7 +331,7 @@ select {
 .progress-label {
     text-align: center;
     color: #888f8c;
-    font-size: 6px;
+    font-size: 9px;
 }
 
 .upload-card {
@@ -369,7 +369,7 @@ select {
 }
 
 .upload-box small {
-    font-size: 6px;
+    font-size: 9px;
     color: #8b918f;
     margin-top: 2px;
 }
@@ -476,7 +476,7 @@ select {
 }
 
 .experience-tag strong {
-    font-size: 8px;
+    font-size: 11px;
     margin-bottom: 3px;
 }
 
@@ -505,7 +505,7 @@ select {
     align-items: center;
     gap: 7px;
     margin: 13px 0 13px;
-    font-size: 7px;
+    font-size: 10px;
     font-weight: 400;
     color: #6b7370;
 }
@@ -525,7 +525,7 @@ select {
     border-radius: 5px;
     background: white;
     color: #59625e;
-    font-size: 7px;
+    font-size: 10px;
     cursor: pointer;
 }
 
@@ -533,7 +533,7 @@ select {
     border-top: 1px solid #e4e7e6;
     margin-top: 10px;
     padding-top: 10px;
-    font-size: 7px;
+    font-size: 10px;
     color: #5e6763;
 }
 

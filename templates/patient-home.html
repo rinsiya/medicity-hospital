@@ -561,8 +561,8 @@
             <aside class="profile">
                 <div class="profile-header">
                     <div class="avatar">
-                        <img src="{{ .patient.ProfilePhoto }}" alt="Profile Photo"
-                            onerror="this.src='/static/images/default-profile.png'">
+                        <img class="profile-picture" src="{{ .patient.ProfilePhoto }}" alt="Profile Photo" 
+                            onerror="this.src='/static/images/default-profile.jpeg'">
                     </div>
 
                     <h3> {{ .patient.PatientName }}</h3>
@@ -635,9 +635,9 @@
                 document.addEventListener("DOMContentLoaded", function () {
 
             loadVitalData();
-            loadRecentAppointments();
-            loadRecentMedicalReports();
-            loadRecentPrescriptions();
+           // loadRecentAppointments();
+           // loadRecentMedicalReports();
+           // loadRecentPrescriptions();
             loadAddress()
         });
 //Prescription data management
